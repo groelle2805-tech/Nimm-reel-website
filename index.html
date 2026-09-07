@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nimm-Reel – Deine Reel-Ideen</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid #334155;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    .hero {
+      max-width: 800px;
+      margin: auto;
+      padding: 70px 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 20px;
+    }
+
+    .highlight {
+      color: #38bdf8;
+    }
+
+    .hero p {
+      font-size: 20px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 35px;
+    }
+
+    .generator {
+      background: #1e293b;
+      padding: 25px;
+      border-radius: 18px;
+      max-width: 600px;
+      margin: auto;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid #475569;
+      background: #0f172a;
+      color: white;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 17px;
+      border: none;
+      border-radius: 10px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #7dd3fc;
+    }
+
+    #result {
+      margin-top: 25px;
+      padding: 20px;
+      background: #0f172a;
+      border-radius: 10px;
+      line-height: 1.6;
+      display: none;
+    }
+
+    footer {
+      text-align: center;
+      color: #64748b;
+      padding: 30px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">NIMM-REEL</div>
+</header>
+
+<section class="hero">
+  <h1>Finde deine nächste <span class="highlight">virale Reel-Idee.</span></h1>
+
+  <p>
+    Gib dein Thema ein und erhalte sofort eine kreative Idee
+    für dein nächstes Instagram- oder TikTok-Reel.
+  </p>
+
+  <div class="generator">
+
+    <label>Worum soll dein Reel gehen?</label>
+    <input type="text" id="topic" placeholder="z.B. Fitness, Geld verdienen, Kochen...">
+
+    <label>Plattform auswählen</label>
+    <select id="platform">
+      <option>Instagram</option>
+      <option>TikTok</option>
+      <option>YouTube Shorts</option>
+    </select>
+
+    <button onclick="generateIdea()">✨ Reel-Idee generieren</button>
+
+    <div id="result"></div>
+
+  </div>
+</section>
+
+<footer>
+  © 2026 NIMM-REEL
+</footer>
+
+<script>
+function generateIdea() {
+  const topic = document.getElementById("topic").value;
+  const platform = document.getElementById("platform").value;
+  const result = document.getElementById("result");
+
+  if (!topic) {
+    result.style.display = "block";
+    result.innerHTML = "⚠️ Bitte gib zuerst ein Thema ein.";
+    return;
+  }
+
+  result.style.display = "block";
+
+  result.innerHTML =
+    "<strong>🔥 Deine Reel-Idee:</strong><br><br>" +
+    "Starte dein " + platform + "-Reel mit der Hook:<br><br>" +
+    "„Die meisten Menschen machen bei " + topic + " genau diesen Fehler...“<br><br>" +
+    "<strong>🎬 Aufbau:</strong><br>" +
+    "1. Starke Hook in den ersten 3 Sekunden<br>" +
+    "2. Problem kurz erklären<br>" +
+    "3. Lösung zeigen<br>" +
+    "4. Mit einer Frage oder CTA abschließen";
+}
+</script>
+
+</body>
+</html>
