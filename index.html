@@ -1,179 +1,173 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nimm-Reel – Deine Reel-Ideen</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
-      min-height: 100vh;
-    }
-
-    header {
-      padding: 20px;
-      text-align: center;
-      border-bottom: 1px solid #334155;
-    }
-
-    .logo {
-      font-size: 28px;
-      font-weight: bold;
-      color: #38bdf8;
-    }
-
-    .hero {
-      max-width: 800px;
-      margin: auto;
-      padding: 70px 20px;
-      text-align: center;
-    }
-
-    h1 {
-      font-size: 42px;
-      margin-bottom: 20px;
-    }
-
-    .highlight {
-      color: #38bdf8;
-    }
-
-    .hero p {
-      font-size: 20px;
-      color: #cbd5e1;
-      line-height: 1.6;
-      margin-bottom: 35px;
-    }
-
-    .generator {
-      background: #1e293b;
-      padding: 25px;
-      border-radius: 18px;
-      max-width: 600px;
-      margin: auto;
-      text-align: left;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 16px;
-      border-radius: 10px;
-      border: 1px solid #475569;
-      background: #0f172a;
-      color: white;
-      margin-bottom: 20px;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 17px;
-      border: none;
-      border-radius: 10px;
-      background: #38bdf8;
-      color: #0f172a;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #7dd3fc;
-    }
-
-    #result {
-      margin-top: 25px;
-      padding: 20px;
-      background: #0f172a;
-      border-radius: 10px;
-      line-height: 1.6;
-      display: none;
-    }
-
-    footer {
-      text-align: center;
-      color: #64748b;
-      padding: 30px;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NIMM-REEL – Dein Reel. Deine Idee. In Sekunden.</title>
+<meta name="description" content="NIMM-REEL entwickelt aus deiner Idee einen fertigen Kurzvideo-Plan für TikTok und Instagram.">
+<style>
+:root{
+  --bg:#07090d;--panel:#0e1219;--panel2:#131923;--text:#f6f7fb;--muted:#a8b0bf;
+  --lime:#c7ff3d;--line:#252d3a;--shadow:0 24px 70px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 50% -10%,#17220b 0,#07090d 34%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5}
+a{color:inherit}.wrap{max-width:1120px;margin:auto;padding:0 20px}
+header{position:sticky;top:0;z-index:20;background:rgba(7,9,13,.82);backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,.06)}
+.nav{height:70px;display:flex;align-items:center;justify-content:space-between}.logo{font-size:22px;font-weight:950;letter-spacing:.5px}.logo span{color:var(--lime)}
+.navlinks{display:flex;gap:26px;color:var(--muted);font-size:14px}.navlinks a{text-decoration:none}.navlinks a:hover{color:var(--text)}
+.hero{text-align:center;padding:78px 0 44px}.eyebrow{display:inline-flex;border:1px solid #425226;color:var(--lime);padding:7px 13px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.6px;background:rgba(199,255,61,.05)}
+h1{font-size:clamp(44px,8vw,82px);line-height:.96;letter-spacing:-3px;margin:20px auto 18px;max-width:920px}
+h1 span{color:var(--lime)}.hero p{max-width:680px;margin:auto;color:var(--muted);font-size:18px}
+.hero-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:28px}
+.btn{border:0;border-radius:12px;padding:14px 20px;font-weight:900;text-decoration:none;cursor:pointer;font-size:15px}
+.btn.primary{background:var(--lime);color:#0a0d07}.btn.secondary{background:#111720;border:1px solid var(--line);color:var(--text)}
+.trust{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px;color:#8e98a8;font-size:12px}.trust b{color:#dfe5ef}
+section{padding:55px 0}.section-title{text-align:center;margin-bottom:28px}.section-title h2{font-size:36px;letter-spacing:-1px;margin:0 0 8px}.section-title p{margin:0;color:var(--muted)}
+.generator{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.card{background:linear-gradient(145deg,rgba(19,25,35,.96),rgba(12,16,23,.96));border:1px solid var(--line);border-radius:22px;padding:24px;box-shadow:var(--shadow)}
+.field{margin-bottom:18px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:8px}.field small{color:var(--muted)}
+input,textarea,select{width:100%;border:1px solid #2a3341;background:#090d13;color:var(--text);border-radius:12px;padding:13px 14px;font:inherit;outline:none}
+textarea{min-height:125px;resize:vertical}input:focus,textarea:focus,select:focus{border-color:#6e8c2c;box-shadow:0 0 0 3px rgba(199,255,61,.08)}
+.choices{display:flex;gap:9px;flex-wrap:wrap}.choice{border:1px solid var(--line);background:#0a0e14;color:var(--muted);padding:10px 13px;border-radius:10px;cursor:pointer;font-weight:750}.choice.active{border-color:var(--lime);background:rgba(199,255,61,.1);color:var(--lime)}
+.result{min-height:100%}.result.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);min-height:460px}
+.result.empty .spark{font-size:42px;margin-bottom:12px}.result-content{display:none}.result-content.show{display:block}
+.result-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:16px}.result-head h3{margin:0;font-size:23px}.tag{font-size:11px;color:#0b0e08;background:var(--lime);padding:6px 9px;border-radius:7px;font-weight:950}
+.block{background:#0a0e14;border:1px solid var(--line);border-radius:14px;padding:15px;margin:11px 0}.block h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--lime)}.block p{margin:0;color:#dce2ec}.scene{padding:9px 0;border-bottom:1px solid #202733}.scene:last-child{border-bottom:0}.scene b{color:#fff}.scene span{color:var(--muted)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}.mini{padding:10px 12px;border:1px solid var(--line);background:#10151d;color:var(--text);border-radius:10px;cursor:pointer;font-weight:800}
+.features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.feature{padding:22px;border:1px solid var(--line);border-radius:18px;background:#0c1118}.icon{font-size:27px}.feature h3{margin:12px 0 7px}.feature p{margin:0;color:var(--muted);font-size:14px}
+.examples{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.example{border:1px solid var(--line);border-radius:18px;padding:20px;background:linear-gradient(145deg,#101620,#0b0f15)}.example .num{color:var(--lime);font-size:12px;font-weight:900}.example h3{margin:9px 0}.example p{color:var(--muted);font-size:14px}
+.faq{max-width:820px;margin:auto}.faq details{border-bottom:1px solid var(--line);padding:16px 0}.faq summary{cursor:pointer;font-weight:850}.faq p{color:var(--muted);margin:10px 0 0}
+.cta{text-align:center;border:1px solid var(--line);border-radius:24px;padding:45px 20px;background:radial-gradient(circle at 50% 0,rgba(199,255,61,.12),transparent 55%),#0d1219}.cta h2{font-size:38px;margin:0 0 10px}.cta p{color:var(--muted);margin:0 0 22px}
+footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var(--muted);font-size:12px}footer .foot{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}footer a{margin-left:14px}
+@media(max-width:800px){.generator,.features,.examples{grid-template-columns:1fr}.navlinks{display:none}.hero{padding-top:55px}h1{letter-spacing:-2px}.card{padding:19px}}
+</style>
 </head>
-
 <body>
+<header><div class="wrap nav">
+  <div class="logo">NIMM<span>-REEL</span></div>
+  <nav class="navlinks"><a href="#generator">Generator</a><a href="#beispiele">Beispiele</a><a href="#faq">FAQ</a></nav>
+</div></header>
 
-<header>
-  <div class="logo">NIMM-REEL</div>
-</header>
-
+<main>
 <section class="hero">
-  <h1>Finde deine nächste <span class="highlight">virale Reel-Idee.</span></h1>
-
-  <p>
-    Gib dein Thema ein und erhalte sofort eine kreative Idee
-    für dein nächstes Instagram- oder TikTok-Reel.
-  </p>
-
-  <div class="generator">
-
-    <label>Worum soll dein Reel gehen?</label>
-    <input type="text" id="topic" placeholder="z.B. Fitness, Geld verdienen, Kochen...">
-
-    <label>Plattform auswählen</label>
-    <select id="platform">
-      <option>Instagram</option>
-      <option>TikTok</option>
-      <option>YouTube Shorts</option>
-    </select>
-
-    <button onclick="generateIdea()">✨ Reel-Idee generieren</button>
-
-    <div id="result"></div>
-
+  <div class="wrap">
+    <div class="eyebrow">KURZVIDEO-IDEEN MIT SYSTEM</div>
+    <h1>Deine Idee.<br><span>Dein nächstes Reel.</span></h1>
+    <p>Gib ein Thema ein und NIMM-REEL baut daraus einen klaren Kurzvideo-Plan – mit Hook, Skript, Szenen, CTA und Hashtags.</p>
+    <div class="hero-actions"><a class="btn primary" href="#generator">Reel erstellen →</a><a class="btn secondary" href="#beispiele">Beispiele ansehen</a></div>
+    <div class="trust"><span>✓ <b>TikTok</b></span><span>✓ <b>Instagram Reels</b></span><span>✓ <b>Ohne Gesicht möglich</b></span><span>✓ <b>Für Smartphone optimiert</b></span></div>
   </div>
 </section>
 
-<footer>
-  © 2026 NIMM-REEL
-</footer>
+<section id="generator">
+<div class="wrap">
+  <div class="section-title"><h2>Dein Reel-Generator</h2><p>In wenigen Angaben vom Thema zum umsetzbaren Reel-Konzept.</p></div>
+  <div class="generator">
+    <div class="card">
+      <div class="field"><label for="topic">1. Worum soll dein Reel gehen?</label><textarea id="topic" placeholder="z. B. 3 einfache Tipps, um mehr Reichweite auf TikTok zu bekommen"></textarea></div>
+      <div class="field"><label>2. Plattform</label><div class="choices" id="platform"><button class="choice active" data-value="TikTok">TikTok</button><button class="choice" data-value="Instagram">Instagram</button></div></div>
+      <div class="field"><label>3. Ziel</label><div class="choices" id="goal"><button class="choice active" data-value="Reichweite">Reichweite</button><button class="choice" data-value="Follower">Follower</button><button class="choice" data-value="Verkauf">Verkauf</button></div></div>
+      <div class="field"><label for="style">4. Stil</label><select id="style"><option>Direkt & aufmerksamkeitsstark</option><option>Informativ & seriös</option><option>Locker & unterhaltsam</option><option>Faceless / B-Roll</option></select></div>
+      <button class="btn primary" style="width:100%" id="generate">Reel-Konzept erstellen ✦</button>
+      <small style="display:block;margin-top:10px;color:var(--muted)">Hinweis: Diese Version zeigt bereits die komplette Nutzerführung. Eine echte KI-API kann anschließend angeschlossen werden.</small>
+    </div>
+
+    <div class="card result empty" id="result">
+      <div id="emptyState"><div class="spark">✦</div><h3>Dein Ergebnis erscheint hier</h3><p>Fülle links die Angaben aus und starte den Generator.</p></div>
+      <div class="result-content" id="resultContent">
+        <div class="result-head"><div><div class="tag" id="platformTag">TIKTOK</div><h3 id="resultTitle">Dein Reel</h3></div></div>
+        <div class="block"><h4>Hook</h4><p id="hook"></p></div>
+        <div class="block"><h4>Sprechtext</h4><p id="script"></p></div>
+        <div class="block"><h4>Szenenplan</h4><div id="scenes"></div></div>
+        <div class="block"><h4>Call-to-Action</h4><p id="cta"></p></div>
+        <div class="block"><h4>Hashtags</h4><p id="hashtags"></p></div>
+        <div class="actions"><button class="mini" id="copy">Ergebnis kopieren</button><button class="mini" id="again">Neu erstellen</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section>
+<div class="wrap">
+<div class="section-title"><h2>Warum NIMM-REEL?</h2><p>Nicht mehr minutenlang überlegen, was du posten sollst.</p></div>
+<div class="features">
+<div class="feature"><div class="icon">⚡</div><h3>Schneller starten</h3><p>Aus einer einfachen Idee entsteht eine strukturierte Reel-Vorlage.</p></div>
+<div class="feature"><div class="icon">🎬</div><h3>Direkt umsetzbar</h3><p>Hook, Szenen und On-Screen-Ideen geben deinem Video eine klare Struktur.</p></div>
+<div class="feature"><div class="icon">👤</div><h3>Faceless geeignet</h3><p>Die Konzepte können auch ohne Gesicht mit B-Roll, Screenrecordings oder KI-Visuals umgesetzt werden.</p></div>
+</div>
+</div>
+</section>
+
+<section id="beispiele">
+<div class="wrap">
+<div class="section-title"><h2>Beispiele</h2><p>So konkret sollen die Ergebnisse sein.</p></div>
+<div class="examples">
+<div class="example"><div class="num">01 · REICHWEITE</div><h3>„3 Fehler, die deine Reels ausbremsen“</h3><p>Starker Einstieg, drei schnelle Punkte, Abschluss mit einer klaren Follower-Aufforderung.</p></div>
+<div class="example"><div class="num">02 · EDUCATION</div><h3>„Das hätte ich früher über TikTok wissen müssen“</h3><p>Persönlicher Einstieg, schnelle Erkenntnis, konkreter Tipp und offene Frage am Ende.</p></div>
+<div class="example"><div class="num">03 · VERKAUF</div><h3>„Wenn du jeden Tag Content brauchst…“</h3><p>Problem zeigen, Lösung erklären, Nutzen herausstellen und erst am Ende zur Aktion auffordern.</p></div>
+</div>
+</div>
+</section>
+
+<section id="faq">
+<div class="wrap">
+<div class="section-title"><h2>FAQ</h2></div>
+<div class="faq">
+<details><summary>Muss ich mein Gesicht zeigen?</summary><p>Nein. NIMM-REEL kann ausdrücklich für Faceless-Content gedacht werden.</p></details>
+<details><summary>Kann ich die Ideen für TikTok und Instagram nutzen?</summary><p>Ja. Der Generator berücksichtigt die ausgewählte Plattform und kann später um plattformspezifische Varianten erweitert werden.</p></details>
+<details><summary>Ist das schon eine echte KI?</summary><p>Die Oberfläche und Nutzerführung sind vorbereitet. Für echte individuelle KI-Texte wird im nächsten technischen Schritt eine KI-API angebunden.</p></details>
+</div>
+</div>
+</section>
+
+<section><div class="wrap"><div class="cta"><h2>Bereit für dein nächstes Reel?</h2><p>Eine Idee reicht. Den Rest strukturieren wir.</p><a class="btn primary" href="#generator">Jetzt Reel erstellen →</a></div></div></section>
+</main>
+
+<footer><div class="wrap foot"><div>© 2026 NIMM-REEL</div><div><a href="impressum.html">Impressum</a><a href="datenschutz.html">Datenschutz</a></div></div></footer>
 
 <script>
-function generateIdea() {
-  const topic = document.getElementById("topic").value;
-  const platform = document.getElementById("platform").value;
-  const result = document.getElementById("result");
-
-  if (!topic) {
-    result.style.display = "block";
-    result.innerHTML = "⚠️ Bitte gib zuerst ein Thema ein.";
-    return;
-  }
-
-  result.style.display = "block";
-
-  result.innerHTML =
-    "<strong>🔥 Deine Reel-Idee:</strong><br><br>" +
-    "Starte dein " + platform + "-Reel mit der Hook:<br><br>" +
-    "„Die meisten Menschen machen bei " + topic + " genau diesen Fehler...“<br><br>" +
-    "<strong>🎬 Aufbau:</strong><br>" +
-    "1. Starke Hook in den ersten 3 Sekunden<br>" +
-    "2. Problem kurz erklären<br>" +
-    "3. Lösung zeigen<br>" +
-    "4. Mit einer Frage oder CTA abschließen";
+const selections={platform:"TikTok",goal:"Reichweite"};
+document.querySelectorAll(".choices").forEach(group=>{
+  group.addEventListener("click",e=>{
+    const b=e.target.closest(".choice"); if(!b)return;
+    group.querySelectorAll(".choice").forEach(x=>x.classList.remove("active")); b.classList.add("active");
+    selections[group.id]=b.dataset.value;
+  });
+});
+const templates={
+ Reichweite:{hook:t=>`Stopp – wenn du "${t}" noch so machst, verschenkst du Reichweite.`,cta:"Wenn du mehr solcher Tipps willst, folge dem Account und speichere dir das Reel.",tags:"#reels #tiktoktipps #reichweite #content #socialmedia"},
+ Follower:{hook:t=>`Wenn du bei "${t}" mehr Follower willst, probier genau das aus.`,cta:"Folge für mehr kurze und umsetzbare Content-Tipps.",tags:"#follower #tiktok #instagramreels #contentcreator #socialmedia"},
+ Verkauf:{hook:t=>`Du willst mit "${t}" mehr erreichen? Dann schau dir diesen einfachen Ansatz an.`,cta:"Wenn du die Lösung ausprobieren möchtest, findest du den nächsten Schritt im Profil.",tags:"#marketing #contentmarketing #onlinebusiness #reels #verkaufen"}
+};
+function build(){
+ const topic=document.getElementById("topic").value.trim()||"mehr Reichweite mit Kurzvideos";
+ const style=document.getElementById("style").value;
+ const t=templates[selections.goal]||templates.Reichweite;
+ document.getElementById("platformTag").textContent=selections.platform.toUpperCase();
+ document.getElementById("resultTitle").textContent=`Reel über: ${topic}`;
+ document.getElementById("hook").textContent=t.hook(topic);
+ document.getElementById("script").textContent=`„Heute zeige ich dir einen einfachen Ansatz rund um ${topic}. Erstens: starte mit einem klaren Problem. Zweitens: gib sofort einen konkreten Tipp. Drittens: beende das Video mit einer eindeutigen nächsten Aktion. So versteht der Zuschauer in wenigen Sekunden, warum er weitersehen sollte.“`;
+ document.getElementById("scenes").innerHTML=[
+  ["0–3 Sek.","Hook groß als On-Screen-Text, schnelle Bewegung oder auffälliger B-Roll-Clip."],
+  ["3–10 Sek.","Problem bzw. Ausgangslage zeigen. Schnelle Schnitte, Untertitel aktiv."],
+  ["10–22 Sek.","Die wichtigsten 2–3 Punkte nacheinander zeigen."],
+  ["22–30 Sek.","Kernaussage wiederholen und CTA einblenden."]
+ ].map(x=>`<div class="scene"><b>${x[0]}</b> – <span>${x[1]}</span></div>`).join("");
+ document.getElementById("cta").textContent=t.cta;
+ document.getElementById("hashtags").textContent=t.tags;
+ document.getElementById("emptyState").style.display="none";
+ document.getElementById("resultContent").classList.add("show");
+ document.getElementById("result").classList.remove("empty");
+ document.getElementById("result").scrollIntoView({behavior:"smooth",block:"center"});
 }
+document.getElementById("generate").addEventListener("click",build);
+document.getElementById("again").addEventListener("click",()=>{document.getElementById("topic").focus();});
+document.getElementById("copy").addEventListener("click",async()=>{
+ const text=[document.getElementById("resultTitle").textContent,"HOOK: "+document.getElementById("hook").textContent,"SPRECHTEXT: "+document.getElementById("script").textContent,"CTA: "+document.getElementById("cta").textContent,"HASHTAGS: "+document.getElementById("hashtags").textContent].join("\n\n");
+ try{await navigator.clipboard.writeText(text);document.getElementById("copy").textContent="Kopiert ✓";setTimeout(()=>document.getElementById("copy").textContent="Ergebnis kopieren",1600)}catch(e){alert(text)}
+});
 </script>
-
 </body>
 </html>
