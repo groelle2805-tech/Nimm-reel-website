@@ -1,4 +1,4 @@
-ratio: "1024:1024"/**
+ratio: "1920:1080"/**
  * NIMM-DOLL backend for Cloudflare Workers
  * Required secret: RUNWAYML_API_SECRET
  *
