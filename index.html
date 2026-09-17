@@ -168,7 +168,56 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
           <button type="button" class="doll-style" data-style="Doll in Box">Doll in Box</button>
         </div>
       </div>
+<div class="doll-accessories">
+  <label>4. Accessoires auswählen</label>
 
+  <div class="doll-accessory-grid">
+    <label class="doll-accessory">
+      <input type="checkbox" value="Laptop">
+      💻 Laptop
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Smartphone">
+      📱 Smartphone
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Kopfhörer">
+      🎧 Kopfhörer
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Kamera">
+      📷 Kamera
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Handtasche">
+      👜 Handtasche
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Kaffeebecher">
+      ☕ Kaffeebecher
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Sonnenbrille">
+      🕶️ Sonnenbrille
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Pflanze">
+      🌱 Pflanze
+    </label>
+
+    <label class="doll-accessory">
+      <input type="checkbox" value="Hund">
+      🐕 Hund
+    </label>
+  </div>
+</div>
       <button class="btn primary" style="width:100%" id="dollGenerate">Meine Doll erstellen ✦</button>
       <div class="doll-error" id="dollError"></div>
       <div class="doll-note">Hinweis: Für die echte Online-Generierung wird einmalig eine sichere KI-API-Verbindung im Cloudflare-Worker benötigt. Der API-Schlüssel bleibt dabei auf dem Server und wird nicht im Browser veröffentlicht.</div>
@@ -321,7 +370,12 @@ async function createDoll(){
     const response=await fetch("/api/doll",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({image:imageData,name,style:dollState.style})
+      body:JSON.stringify({
+  image:imageData,
+  name,
+  style:dollState.style,
+  accessories:[...document.querySelectorAll('.doll-accessory input:checked')].map(x=>x.value)
+})
     });
     const start=await response.json();
     if(!response.ok)throw new Error(start.error||"Die Doll konnte nicht gestartet werden.");
