@@ -39,7 +39,7 @@ function promptFor(style, name, accessories=[]) {
 
   return `${styleText}. Transform the person in @person into an original stylized fashion doll while preserving recognizable facial characteristics, hair color and overall likeness. Do not copy any existing branded doll character. No brand logos. Clean premium composition. ${style === "Doll in Box" ? `The package label should read "${label}" and look like an original collectible brand.` : `The character name is "${label}".`} Make the result polished, realistic, detailed and social-media ready.${accessoryText}`;
 }
-}
+
 
 export default {
   async fetch(request, env) {
