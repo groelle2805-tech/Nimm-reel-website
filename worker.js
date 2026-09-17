@@ -28,10 +28,17 @@ function json(data, status=200) {
   });
 }
 
-function promptFor(style, name) {
+function promptFor(style, name, accessories=[]) {
   const styleText = STYLE_PROMPTS[style] || STYLE_PROMPTS.Fashion;
   const label = (name || "Your Doll").slice(0,40);
-  return `${styleText}. Transform the person in @person into an original stylized fashion doll while preserving recognizable facial characteristics, hair color and overall likeness. Do not copy any existing branded doll character. No brand logos. Clean premium composition. ${style === "Doll in Box" ? `The package label should read "${label}" and look like an original collectible brand.` : `The character name is "${label}".`} Make the result polished, realistic, detailed and social-media ready.`;
+
+  const accessoryText =
+    Array.isArray(accessories) && accessories.length
+      ? ` Include these selected accessories clearly in the final composition: ${accessories.slice(0,6).join(", ")}.`
+      : "";
+
+  return `${styleText}. Transform the person in @person into an original stylized fashion doll while preserving recognizable facial characteristics, hair color and overall likeness. Do not copy any existing branded doll character. No brand logos. Clean premium composition. ${style === "Doll in Box" ? `The package label should read "${label}" and look like an original collectible brand.` : `The character name is "${label}".`} Make the result polished, realistic, detailed and social-media ready.${accessoryText}`;
+}
 }
 
 export default {
@@ -64,7 +71,7 @@ export default {
       const payload = {
         model: "gen4_image",
         ratio: "1080:1920",
-        promptText: promptFor(body.style, body.name),
+        promptText: promptFor(body.style, body.name,accessories),
         referenceImages: [{ uri: body.image, tag: "person" }]
       };
 
