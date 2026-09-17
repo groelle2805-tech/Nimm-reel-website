@@ -79,7 +79,14 @@ export default {
       });
 
       const data = await r.json();
-      if (!r.ok) return json({error:data?.error || data?.message || "KI-Anfrage fehlgeschlagen."},500);
+      if (!r.ok) {
+  const detail = Array.isArray(data?.issues)
+    ? data.issues.map(x => `${(x.path || []).join(".")}: ${x.message}`).join(" | ")
+    : "";
+  return json({
+    error: `${data?.error || data?.message || "KI-Anfrage fehlgeschlagen."}${detail ? " – " + detail : ""}`
+  }, r.status);
+}
       return json({taskId:data.id});
     }
 
@@ -94,7 +101,14 @@ export default {
         }
       });
       const data = await r.json();
-      if (!r.ok) return json({error:data?.error || data?.message || "Task-Abfrage fehlgeschlagen."},500);
+      if (!r.ok) {
+  const detail = Array.isArray(data?.issues)
+    ? data.issues.map(x => `${(x.path || []).join(".")}: ${x.message}`).join(" | ")
+    : "";
+  return json({
+    error: `${data?.error || data?.message || "Task-Abfrage fehlgeschlagen."}${detail ? " – " + detail : ""}`
+  }, r.status);
+}
 
       if (data.status === "SUCCEEDED") return json({status:"SUCCEEDED", image:data.output?.[0]});
       if (data.status === "FAILED") return json({status:"FAILED", error:data.failure || "Bildgenerierung fehlgeschlagen."});
