@@ -1,4 +1,4 @@
-ratio: "1080:1920"/**
+/** 
  * NIMM-DOLL backend for Cloudflare Workers
  * Required secret: RUNWAYML_API_SECRET
  *
@@ -63,7 +63,7 @@ export default {
 
       const payload = {
         model: "gen4_image",
-        ratio: "1:1",
+        ratio: "1080:1920",
         promptText: promptFor(body.style, body.name),
         referenceImages: [{ uri: body.image, tag: "person" }]
       };
