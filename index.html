@@ -78,7 +78,43 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
 .doll-download.show{display:inline-flex}
 @media(max-width:800px){.doll-grid{grid-template-columns:1fr}.doll-result{min-height:360px}}
 
-</style>
+.doll-accessory-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.doll-accessory {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  background: rgba(255,255,255,.04);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.doll-accessory input[type="checkbox"] {
+  position: static !important;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  flex: 0 0 20px;
+  accent-color: #b6ff00;
+}
+
+.doll-accessory:hover {
+  border-color: #b6ff00;
+}
+
+@media (max-width: 600px) {
+  .doll-accessory-grid {
+    grid-template-columns: 1fr;
+  }
+}</style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-6Q3NH8MBTG"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-6Q3NH8MBTG');</script>
 </head>
