@@ -35,25 +35,11 @@ function json(data, status=200) {
 function promptFor(style, name, accessories=[]) {
   const styleText = STYLE_PROMPTS[style] || STYLE_PROMPTS.Fashion;
   const label = (name || "Your Doll").slice(0,40);
-
   const accessoryText = Array.isArray(accessories) && accessories.length
-    ? ` Include these selected accessories as appropriate: ${accessories.slice(0,9).join(", ")}.`
-    : "";
+    ? accessories.slice(0,9).join(", ")
+    : "keine";
 
-  return `${styleText}.
-
-IMPORTANT IDENTITY PRESERVATION:
-Use @person as the primary and authoritative visual reference for the person. The finished doll must clearly resemble the same person from the reference photo, not a generic fashion model. Preserve the person's recognizable facial geometry and proportions: face shape, forehead, cheek structure, jawline, chin, eye shape and spacing, eyebrow shape, nose shape, lips, smile and natural skin tone. Preserve the visible hair color, hairstyle, hairline and overall appearance. Preserve distinctive visible details such as piercings, tattoos or other identifying visual features when present. Do not beautify, age, de-age, slim, widen, or otherwise alter the person's face or distinctive features.
-
-The transformation should primarily change the person into a premium stylized collectible doll while keeping the person's likeness recognizable. The doll should look like a stylized version of the same person, not a different person wearing similar clothes. Keep the face especially faithful and detailed even in a full-body composition.
-
-${accessoryText}
-Do not copy any existing branded doll character. No brand logos. Clean premium composition.
-${style === "Doll in Box"
-  ? `The package label should read "${label}" and look like an original collectible brand.`
-  : `The character name is "${label}".`
-}
-Make the result polished, realistic, detailed and social-media ready.`;
+  return `${styleText}. Create a stylized doll of the SAME PERSON shown in @person. Preserve the person's identity and recognizable facial features: face shape, eyes, eyebrows, nose, lips, jawline, chin, skin tone, hair color, hairstyle and hairline. Preserve visible tattoos and piercings. Do not beautify, age, de-age or change facial proportions. The result must clearly resemble the same person, not a generic model. Keep the face highly faithful while transforming the person into a polished collectible doll. Accessories: ${accessoryText}. ${style === "Doll in Box" ? `Realistic clear blister package, premium original packaging, label "${label}", no logos.` : `Character name "${label}". No logos.`}`;
 }
 
 export default {
