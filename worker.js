@@ -68,7 +68,7 @@ export default {
         return json({error:"Bitte ein gültiges Bild hochladen."},400);
       }
 
-      const payload = {
+      const accessories = Array.isArray(body.accessories) ? body.accessories : [];const payload = {
         model: "gen4_image",
         ratio: "1080:1920",
         promptText: promptFor(body.style, body.name,accessories),
