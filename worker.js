@@ -95,7 +95,7 @@ export default {
 
       const payload = {
         model: "gen4_image",
-        ratio: "1080:1920",
+        ratio: "1:1",
         promptText: promptFor(body.style, body.name, accessories),
         referenceImages: [{ uri: body.image, tag: "person" }]
       };
