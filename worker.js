@@ -1,4 +1,4 @@
-/** 
+/**
  * NIMM-DOLL backend for Cloudflare Workers
  * Required secret: RUNWAYML_API_SECRET
  *
@@ -9,6 +9,7 @@
  * The browser sends the uploaded image as a data URI.
  * The secret is NEVER sent to the browser.
  */
+
 const RUNWAY_API = "https://api.dev.runwayml.com/v1";
 
 const STYLE_PROMPTS = {
@@ -24,7 +25,10 @@ const STYLE_PROMPTS = {
 function json(data, status=200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {"Content-Type":"application/json", "Access-Control-Allow-Origin":"*"}
+    headers: {
+      "Content-Type":"application/json",
+      "Access-Control-Allow-Origin":"*"
+    }
   });
 }
 
@@ -32,14 +36,25 @@ function promptFor(style, name, accessories=[]) {
   const styleText = STYLE_PROMPTS[style] || STYLE_PROMPTS.Fashion;
   const label = (name || "Your Doll").slice(0,40);
 
-  const accessoryText =
-    Array.isArray(accessories) && accessories.length
-      ? ` Include these selected accessories clearly in the final composition: ${accessories.slice(0,6).join(", ")}.`
-      : "";
+  const accessoryText = Array.isArray(accessories) && accessories.length
+    ? ` Include these selected accessories as appropriate: ${accessories.slice(0,9).join(", ")}.`
+    : "";
 
-  return `${styleText}. Transform the person in @person into an original stylized fashion doll while preserving recognizable facial characteristics, hair color and overall likeness. Do not copy any existing branded doll character. No brand logos. Clean premium composition. ${style === "Doll in Box" ? `The package label should read "${label}" and look like an original collectible brand.` : `The character name is "${label}".`} Make the result polished, realistic, detailed and social-media ready.${accessoryText}`;
+  return `${styleText}.
+
+IMPORTANT IDENTITY PRESERVATION:
+Use @person as the primary and authoritative visual reference for the person. The finished doll must clearly resemble the same person from the reference photo, not a generic fashion model. Preserve the person's recognizable facial geometry and proportions: face shape, forehead, cheek structure, jawline, chin, eye shape and spacing, eyebrow shape, nose shape, lips, smile and natural skin tone. Preserve the visible hair color, hairstyle, hairline and overall appearance. Preserve distinctive visible details such as piercings, tattoos or other identifying visual features when present. Do not beautify, age, de-age, slim, widen, or otherwise alter the person's face or distinctive features.
+
+The transformation should primarily change the person into a premium stylized collectible doll while keeping the person's likeness recognizable. The doll should look like a stylized version of the same person, not a different person wearing similar clothes. Keep the face especially faithful and detailed even in a full-body composition.
+
+${accessoryText}
+Do not copy any existing branded doll character. No brand logos. Clean premium composition.
+${style === "Doll in Box"
+  ? `The package label should read "${label}" and look like an original collectible brand.`
+  : `The character name is "${label}".`
 }
-
+Make the result polished, realistic, detailed and social-media ready.`;
+}
 
 export default {
   async fetch(request, env) {
@@ -55,23 +70,33 @@ export default {
     }
 
     const url = new URL(request.url);
+
     if (!url.pathname.startsWith("/api/doll")) {
       return new Response("NIMM-DOLL API");
     }
 
-    if (!env.RUNWAYML_API_SECRET) return json({error:"RUNWAYML_API_SECRET fehlt im Worker."},500);
+    if (!env.RUNWAYML_API_SECRET) {
+      return json({error:"RUNWAYML_API_SECRET fehlt im Worker."},500);
+    }
 
     if (request.method === "POST") {
       let body;
-      try { body = await request.json(); } catch { return json({error:"Ungültige Anfrage."},400); }
+      try {
+        body = await request.json();
+      } catch {
+        return json({error:"Ungültige Anfrage."},400);
+      }
+
       if (!body.image || typeof body.image !== "string" || !body.image.startsWith("data:image/")) {
         return json({error:"Bitte ein gültiges Bild hochladen."},400);
       }
 
-      const accessories = Array.isArray(body.accessories) ? body.accessories : [];const payload = {
+      const accessories = Array.isArray(body.accessories) ? body.accessories : [];
+
+      const payload = {
         model: "gen4_image",
         ratio: "1080:1920",
-        promptText: promptFor(body.style, body.name,accessories),
+        promptText: promptFor(body.style, body.name, accessories),
         referenceImages: [{ uri: body.image, tag: "person" }]
       };
 
@@ -86,20 +111,23 @@ export default {
       });
 
       const data = await r.json();
+
       if (!r.ok) {
-  const detail = Array.isArray(data?.issues)
-    ? data.issues.map(x => `${(x.path || []).join(".")}: ${x.message}`).join(" | ")
-    : "";
-  return json({
-    error: `${data?.error || data?.message || "KI-Anfrage fehlgeschlagen."}${detail ? " – " + detail : ""}`
-  }, r.status);
-}
+        return json({
+          error:data?.error || data?.message || "KI-Anfrage fehlgeschlagen.",
+          issues:data?.issues || undefined
+        },500);
+      }
+
       return json({taskId:data.id});
     }
 
     if (request.method === "GET") {
       const taskId = url.searchParams.get("task");
-      if (!taskId) return json({error:"task fehlt."},400);
+
+      if (!taskId) {
+        return json({error:"task fehlt."},400);
+      }
 
       const r = await fetch(`${RUNWAY_API}/tasks/${encodeURIComponent(taskId)}`, {
         headers:{
@@ -107,18 +135,27 @@ export default {
           "X-Runway-Version":"2024-11-06"
         }
       });
-      const data = await r.json();
-      if (!r.ok) {
-  const detail = Array.isArray(data?.issues)
-    ? data.issues.map(x => `${(x.path || []).join(".")}: ${x.message}`).join(" | ")
-    : "";
-  return json({
-    error: `${data?.error || data?.message || "Task-Abfrage fehlgeschlagen."}${detail ? " – " + detail : ""}`
-  }, r.status);
-}
 
-      if (data.status === "SUCCEEDED") return json({status:"SUCCEEDED", image:data.output?.[0]});
-      if (data.status === "FAILED") return json({status:"FAILED", error:data.failure || "Bildgenerierung fehlgeschlagen."});
+      const data = await r.json();
+
+      if (!r.ok) {
+        return json({
+          error:data?.error || data?.message || "Task-Abfrage fehlgeschlagen.",
+          issues:data?.issues || undefined
+        },500);
+      }
+
+      if (data.status === "SUCCEEDED") {
+        return json({status:"SUCCEEDED", image:data.output?.[0]});
+      }
+
+      if (data.status === "FAILED") {
+        return json({
+          status:"FAILED",
+          error:data.failure || "Bildgenerierung fehlgeschlagen."
+        });
+      }
+
       return json({status:data.status || "RUNNING"});
     }
 
