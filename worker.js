@@ -97,7 +97,7 @@ export default {
       });
 
       const data = await r.json();
-
+console.log("RUNWAY_RESPONSE", JSON.stringify(data));
       if (!r.ok) {
         return json({
           error:data?.error || data?.message || "KI-Anfrage fehlgeschlagen.",
