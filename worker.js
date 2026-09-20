@@ -85,7 +85,7 @@ export default {
         promptText: promptFor(body.style, body.name, accessories),
         referenceImages: [{ uri: body.image, tag: "person" }]
       };
-
+console.log("RUNWAY_PAYLOAD_CHECK", JSON.stringify({model: payload.model, ratio: payload.ratio}));
       const r = await fetch(`${RUNWAY_API}/text_to_image`, {
         method:"POST",
         headers:{
