@@ -100,6 +100,7 @@ console.log("RUNWAY_PAYLOAD_CHECK", JSON.stringify({model: payload.model, ratio:
       });
 
       const data = await r.json();
+      console.log("RUNWAY_TASK_RESPONSE", JSON.stringify(data));
 console.log("RUNWAY_RESPONSE", JSON.stringify(data));
       if (!r.ok) {
         return json({
