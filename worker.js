@@ -40,9 +40,11 @@ function promptFor(style, name, accessories = []) {
       ? accessories.slice(0, 9).join(", ")
       : "keine";
 
-  return `${styleText}. Create a premium collectible doll of the SAME PERSON shown in @person. Preserve the person's recognizable identity, face shape, eyes, eyebrows, nose, lips, jawline, chin, skin tone, hair color, hairstyle, hairline, visible tattoos and piercings. Do not beautify or change facial proportions. The doll must clearly resemble the same person.
+  return `${styleText}. Create a premium collectible fashion doll of the SAME PERSON shown in @person. Preserve the person's identity, face, hair, skin tone, tattoos and piercings.
 
-For Doll in Box: create a realistic premium transparent blister package with a clean modern collectible-toy design. Include the selected accessories: ${accessoryText}. Use completely blank, clean packaging panels with NO readable text, NO letters, NO fake words, NO logos, NO brand names and NO random writing anywhere on the package. Do not generate labels or typography. Focus on the person, the doll, the accessories and the realistic packaging.`;
+For Doll in Box: create a beautiful high-end collectible doll package with a realistic transparent blister. The box should look like a professionally designed premium fashion-toy product, elegant and visually appealing. Use a stylish coordinated background inside the box, with attractive decorative shapes and subtle graphic elements. Arrange the doll prominently on the left and the accessories neatly in individual molded compartments on the right. Make the composition balanced, clean and luxurious. Include these accessories: ${accessoryText}.
+
+Use only clean decorative packaging design. NO logos, NO brand names, NO random text, NO fake words, NO letters and NO generated typography anywhere on the package. Do not create large empty panels. Make the entire package visually finished and premium.`;
 }
 
 export default {
