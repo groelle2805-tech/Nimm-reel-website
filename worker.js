@@ -32,14 +32,17 @@ function json(data, status=200) {
   });
 }
 
-function promptFor(style, name, accessories=[]) {
+function promptFor(style, name, accessories = []) {
   const styleText = STYLE_PROMPTS[style] || STYLE_PROMPTS.Fashion;
-  const label = (name || "Your Doll").slice(0,40);
-  const accessoryText = Array.isArray(accessories) && accessories.length
-    ? accessories.slice(0,9).join(", ")
-    : "keine";
 
-  return `${styleText}. Create a stylized doll of the SAME PERSON shown in @person. Preserve the person's identity and recognizable facial features: face shape, eyes, eyebrows, nose, lips, jawline, chin, skin tone, hair color, hairstyle and hairline. Preserve visible tattoos and piercings. Do not beautify, age, de-age or change facial proportions. The result must clearly resemble the same person, not a generic model. Keep the face highly faithful while transforming the person into a polished collectible doll. Accessories: ${accessoryText}. ${style === "Doll in Box" ? `Realistic clear blister package, premium original packaging, label "${label}", no logos.` : `Character name "${label}". No logos.`}`;
+  const accessoryText =
+    Array.isArray(accessories) && accessories.length
+      ? accessories.slice(0, 9).join(", ")
+      : "keine";
+
+  return `${styleText}. Create a premium collectible doll of the SAME PERSON shown in @person. Preserve the person's recognizable identity, face shape, eyes, eyebrows, nose, lips, jawline, chin, skin tone, hair color, hairstyle, hairline, visible tattoos and piercings. Do not beautify or change facial proportions. The doll must clearly resemble the same person.
+
+For Doll in Box: create a realistic premium transparent blister package with a clean modern collectible-toy design. Include the selected accessories: ${accessoryText}. Use completely blank, clean packaging panels with NO readable text, NO letters, NO fake words, NO logos, NO brand names and NO random writing anywhere on the package. Do not generate labels or typography. Focus on the person, the doll, the accessories and the realistic packaging.`;
 }
 
 export default {
