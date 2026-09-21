@@ -517,11 +517,10 @@ async function createDoll(){
       if(data.status==="FAILED")throw new Error(data.error||"Die Bildgenerierung ist fehlgeschlagen.");
     }
     if(!result)throw new Error("Die Erstellung dauert ungewöhnlich lange. Bitte versuche es erneut.");
-    const portrait=await makeDollPortrait(result.image);
     const img=document.getElementById("dollImage");
-    img.src=portrait;
-    const dl=document.getElementById("dollDownload");
-    dl.href=portrait;
+img.src=result.image;
+const dl=document.getElementById("dollDownload");
+dl.href=result.image;
     dl.classList.add("show");
     document.getElementById("dollEmpty").style.display="none";
     document.getElementById("dollLoading").classList.remove("show");
