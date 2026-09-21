@@ -446,6 +446,48 @@ function selectedDollAccessories(){
   return [...document.querySelectorAll(".doll-accessory input:checked")].map(x=>x.value);
 }
 
+async function makeDollPortrait(src){
+  const image=await new Promise((resolve,reject)=>{
+    const im=new Image();
+    im.onload=()=>resolve(im);
+    im.onerror=reject;
+    im.src=src;
+  });
+  const W=1080,H=1920;
+  const canvas=document.createElement("canvas");
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext("2d");
+
+  // Vollflächiger, weichgezeichneter Hintergrund aus der Doll selbst.
+  const scale=Math.max(W/image.width,H/image.height);
+  const bw=image.width*scale,bh=image.height*scale;
+  const bx=(W-bw)/2,by=(H-bh)/2;
+  ctx.save();
+  ctx.filter="blur(28px) brightness(.62) saturate(1.08)";
+  ctx.drawImage(image,bx,by,bw,bh);
+  ctx.restore();
+
+  // Dunkle, dezente Ebene für einen sauberen Social-Media-Look.
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,"rgba(7,9,13,.20)");
+  grad.addColorStop(.5,"rgba(7,9,13,.05)");
+  grad.addColorStop(1,"rgba(7,9,13,.28)");
+  ctx.fillStyle=grad; ctx.fillRect(0,0,W,H);
+
+  // Die eigentliche Doll bleibt vollständig sichtbar und wird nicht beschnitten.
+  const maxW=900,maxH=900;
+  const fgScale=Math.min(maxW/image.width,maxH/image.height);
+  const fw=image.width*fgScale,fh=image.height*fgScale;
+  const fx=(W-fw)/2,fy=(H-fh)/2;
+  ctx.save();
+  ctx.shadowColor="rgba(0,0,0,.48)";
+  ctx.shadowBlur=34; ctx.shadowOffsetY=18;
+  ctx.drawImage(image,fx,fy,fw,fh);
+  ctx.restore();
+
+  return canvas.toDataURL("image/png");
+}
+
 async function createDoll(){
   const err=document.getElementById("dollError");
   err.classList.remove("show");
@@ -474,10 +516,11 @@ async function createDoll(){
       if(data.status==="FAILED")throw new Error(data.error||"Die Bildgenerierung ist fehlgeschlagen.");
     }
     if(!result)throw new Error("Die Erstellung dauert ungewöhnlich lange. Bitte versuche es erneut.");
+    const portrait=await makeDollPortrait(result.image);
     const img=document.getElementById("dollImage");
-    img.src=result.image;
+    img.src=portrait;
     const dl=document.getElementById("dollDownload");
-    dl.href=result.image;
+    dl.href=portrait;
     dl.classList.add("show");
     document.getElementById("dollEmpty").style.display="none";
     document.getElementById("dollLoading").classList.remove("show");
