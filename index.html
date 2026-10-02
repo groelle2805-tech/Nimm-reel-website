@@ -319,7 +319,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
   <div class="doll-result empty card" id="dollResult" style="margin-top:22px">
     <div id="dollEmpty"><div class="spark">🧸</div><h3>Deine fertige Doll erscheint hier</h3><p>Lade dein Foto hoch und starte die Erstellung.</p></div>
     <div class="doll-loading" id="dollLoading"><div class="doll-spinner"></div><h3>Deine Doll wird erstellt …</h3><p>Das kann einen Moment dauern.</p></div>
-    <div id="dollOutput" style="display:none"><img id="dollImage" alt="Deine persönliche Fashion Doll"><br><a id="dollDownload" class="btn primary doll-download" download="meine-doll.png">Bild speichern ↓</a></div>
+    <div id="dollOutput" style="display:none"><img id="dollImage" alt="Deine persönliche Fashion Doll"><br><button id="dollDownload" type="button" class="btn primary doll-download">Bild mit Namen speichern ↓</button></div>
   </div>
 </div>
 </section>
@@ -491,6 +491,26 @@ async function makeDollPortrait(src){
   return canvas.toDataURL("image/png");
 }
 
+async function buildCustomerDollDownload(){
+  const img=document.getElementById("dollImage");
+  const name=(document.getElementById("dollName").value||"").trim().toUpperCase();
+  const isBox=dollState.style==="Doll in Box";
+  const err=document.getElementById("dollError");
+  try{
+    const r=await fetch(img.src); if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
+    const blob=await r.blob(), bmp=await createImageBitmap(blob);
+    const canvas=document.createElement("canvas"); canvas.width=bmp.width; canvas.height=bmp.height;
+    const ctx=canvas.getContext("2d"); ctx.drawImage(bmp,0,0);
+    if(isBox&&name){
+      const x=canvas.width*.30,y=canvas.height*(1-.115-.07),w=canvas.width*.40,h=canvas.height*.07;
+      ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#f4f4f4";ctx.shadowColor="rgba(0,0,0,.75)";ctx.shadowBlur=Math.max(2,canvas.width*.003);
+      let fs=Math.max(20,Math.floor(canvas.width*.045));ctx.font=`900 ${fs}px Arial,sans-serif`;
+      while(ctx.measureText(name).width>w*.9&&fs>14){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}
+      ctx.fillText(name,x+w/2,y+h/2,w*.9);ctx.restore();
+    }
+    canvas.toBlob(b=>{if(!b)return;const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`NIMM-DOLL-${name||"Bild"}.jpg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)},"image/jpeg",.95);
+  }catch(e){err.textContent=e.message||"Bild konnte nicht gespeichert werden.";err.classList.add("show")}
+}
 async function showPaidDollOrder(orderId){
   const err=document.getElementById("dollError");
   err.classList.remove("show");
@@ -513,7 +533,6 @@ async function showPaidDollOrder(orderId){
     const img=document.getElementById("dollImage");
     img.src=result.image;
     const dl=document.getElementById("dollDownload");
-    dl.href=result.image;
     dl.classList.add("show");
     document.getElementById("dollEmpty").style.display="none";
     document.getElementById("dollLoading").classList.remove("show");
@@ -559,6 +578,7 @@ async function createDoll(){
   }
 }
 document.getElementById("dollGenerate").addEventListener("click",createDoll);
+document.getElementById("dollDownload").addEventListener("click",buildCustomerDollDownload);
 
 (function resumeNimmDollAfterCheckout(){
   const params=new URLSearchParams(window.location.search);
