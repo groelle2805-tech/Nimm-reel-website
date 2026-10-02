@@ -9,7 +9,7 @@ main{max-width:620px;margin:auto;padding:28px 18px 60px}h1{margin:0 0 4px}h1 spa
 label{display:block;font-weight:800;margin:14px 0 7px}input,select{width:100%;padding:13px;border-radius:10px;border:1px solid var(--line);background:#080c12;color:#fff;font:inherit}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.check{display:flex;gap:8px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:10px;color:#ddd}.check input{width:auto}
 button{width:100%;border:0;border-radius:12px;padding:15px;background:var(--lime);color:#091006;font-weight:900;font-size:16px;cursor:pointer;margin-top:18px}
-button:disabled{opacity:.6}.status{white-space:pre-wrap;margin-top:15px;color:#dce4ef}.err{color:#ff9d9d}.out{display:none;margin-top:18px}.out img{width:100%;border-radius:14px}
+button:disabled{opacity:.6}.status{white-space:pre-wrap;margin-top:15px;color:#dce4ef}.err{color:#ff9d9d}.out{display:none;margin-top:18px}.out .stage{position:relative;width:100%}.out img{width:100%;border-radius:14px;display:block}.nameplate{position:absolute;left:31%;right:31%;bottom:5.2%;height:9%;display:flex;align-items:center;justify-content:center;text-align:center;color:#111;font-weight:950;font-size:clamp(18px,5vw,34px);letter-spacing:.06em;text-transform:uppercase;text-shadow:0 1px 0 rgba(255,255,255,.5);overflow:hidden;padding:0 4px}
 small{color:var(--muted)}
 </style></head><body><main>
 <h1>NIMM-<span>DOLL</span> Admin-Test</h1>
@@ -26,7 +26,7 @@ small{color:var(--muted)}
 <label class="check"><input type="checkbox" value="Smartphone">Smartphone</label><label class="check"><input type="checkbox" value="Plant">Pflanze</label>
 </div>
 <button id="go">Kostenlosen Admin-Test erstellen</button><div id="status" class="status"></div>
-<div id="out" class="out"><img id="result" alt="NIMM-DOLL Testergebnis"></div>
+<div id="out" class="out"><div class="stage"><img id="result" alt="NIMM-DOLL Testergebnis"><div id="nameplate" class="nameplate"></div></div></div>
 </div></main>
 <script>
 const $=id=>document.getElementById(id);
@@ -50,7 +50,7 @@ async function run(){
    const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
    if(!p.ok)throw new Error(q.error||"Statusfehler");
    if(q.generationStatus==="failed")throw new Error("Bildgenerierung fehlgeschlagen.");
-   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("out").style.display="block";s.textContent="Fertig.";return}
+   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
  }catch(e){s.className="status err";s.textContent=e.message||String(e)}
