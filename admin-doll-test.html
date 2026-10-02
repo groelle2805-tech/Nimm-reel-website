@@ -49,7 +49,7 @@ async function run(){
    await new Promise(x=>setTimeout(x,2500));
    const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
    if(!p.ok)throw new Error(q.error||"Statusfehler");
-   if(q.generationStatus==="failed")throw new Error("Bildgenerierung fehlgeschlagen.");
+   if(q.generationStatus==="failed")throw new Error(q.error||"Bildgenerierung fehlgeschlagen.");
    if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
