@@ -114,7 +114,7 @@ async function startGeneration(env, orderId) {
     try { accessories = order.accessories ? JSON.parse(order.accessories) : []; } catch { accessories = []; }
     const payload = {
       model: "gen4_image",
-      ratio: "1024:1024",
+      ratio: "1080:1080",
       promptText: promptFor(order.style, order.name, accessories),
       referenceImages: [{ uri: imageData, tag: "person" }],
     };
