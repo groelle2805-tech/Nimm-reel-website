@@ -125,7 +125,7 @@ async function startGeneration(env, orderId) {
     });
     const data = await response.json();
     if (!response.ok || !data.id) {
-      const runwayDetail = typeof data?.error === "string" ? data.error : (data?.error?.message || data?.message || JSON.stringify(data));
+      const runwayDetail = JSON.stringify(data);
       console.error("RUNWAY_START_ERROR", orderId, response.status, runwayDetail);
       throw new Error(`Runway ${response.status}: ${runwayDetail || "Start fehlgeschlagen"}`);
     }
