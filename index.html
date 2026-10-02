@@ -295,7 +295,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
     <label class="doll-accessory"><input type="checkbox" value="Hund"><span>🐕 Hund</span><span class="acc-check">✓</span></label>
   </div>
 </div>
-<button class="btn primary doll-generate" id="dollGenerate">Meine Doll erstellen ✦</button>
+<button class="btn primary doll-generate" id="dollGenerate">Jetzt für 2,99 € erstellen ✦</button>
       <div class="doll-error" id="dollError"></div>
       <div class="doll-note">Dein Foto wird zur Erstellung sicher an die KI weitergegeben. Der API-Schlüssel bleibt im Cloudflare-Worker und wird nicht im Browser veröffentlicht.</div>
     </div>
@@ -410,6 +410,8 @@ document.querySelectorAll(".doll-style").forEach(b=>{
     document.querySelectorAll(".doll-style").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");
     dollState.style=b.dataset.style;
+    const payBtn=document.getElementById("dollGenerate");
+    if(payBtn) payBtn.textContent=dollState.style==="Doll in Box"?"Jetzt für 4,99 € erstellen ✦":"Jetzt für 2,99 € erstellen ✦";
   });
 });
 document.getElementById("dollPhoto").addEventListener("change",e=>{
@@ -489,6 +491,44 @@ async function makeDollPortrait(src){
   return canvas.toDataURL("image/png");
 }
 
+async function showPaidDollOrder(orderId){
+  const err=document.getElementById("dollError");
+  err.classList.remove("show");
+  setDollBusy(true);
+  document.getElementById("dollLoading").querySelector("h3").textContent="Zahlung bestätigt – deine Doll wird erstellt …";
+  try{
+    let result=null;
+    for(let i=0;i<60;i++){
+      const poll=await fetch("/api/doll?order="+encodeURIComponent(orderId));
+      const data=await poll.json();
+      if(!poll.ok)throw new Error(data.error||"Bestellstatus konnte nicht geladen werden.");
+      if(data.paymentStatus==="paid" && data.generationStatus==="succeeded" && data.image){
+        result=data;
+        break;
+      }
+      if(data.generationStatus==="failed")throw new Error("Die Bildgenerierung ist fehlgeschlagen.");
+      await new Promise(r=>setTimeout(r,2500));
+    }
+    if(!result)throw new Error("Die Erstellung dauert länger als erwartet. Bitte lade die Seite gleich erneut.");
+    const img=document.getElementById("dollImage");
+    img.src=result.image;
+    const dl=document.getElementById("dollDownload");
+    dl.href=result.image;
+    dl.classList.add("show");
+    document.getElementById("dollEmpty").style.display="none";
+    document.getElementById("dollLoading").classList.remove("show");
+    document.getElementById("dollOutput").style.display="block";
+    document.getElementById("dollResult").classList.remove("empty");
+    document.getElementById("dollGenerate").disabled=false;
+    document.getElementById("dollGenerate").style.opacity="1";
+    localStorage.removeItem("nimmdoll_order");
+  }catch(e){
+    err.textContent=e.message||"Es ist ein Fehler aufgetreten.";
+    err.classList.add("show");
+    setDollBusy(false);
+  }
+}
+
 async function createDoll(){
   const err=document.getElementById("dollError");
   err.classList.remove("show");
@@ -501,31 +541,15 @@ async function createDoll(){
   try{
     const imageData=await dollDataUrl(dollState.file);
     const name=(document.getElementById("dollName").value||"Deine Doll").trim();
-    const response=await fetch("/api/doll",{
+    const response=await fetch("/api/doll/checkout",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({image:imageData,name,style:dollState.style,accessories:selectedDollAccessories()})
     });
-    const start=await response.json();
-    if(!response.ok)throw new Error(start.error||"Die Doll konnte nicht gestartet werden.");
-    let result=null;
-    for(let i=0;i<30;i++){
-      await new Promise(r=>setTimeout(r,2500));
-      const poll=await fetch("/api/doll?task="+encodeURIComponent(start.taskId));
-      const data=await poll.json();
-      if(data.status==="SUCCEEDED"){result=data;break;}
-      if(data.status==="FAILED")throw new Error(data.error||"Die Bildgenerierung ist fehlgeschlagen.");
-    }
-    if(!result)throw new Error("Die Erstellung dauert ungewöhnlich lange. Bitte versuche es erneut.");
-    const img=document.getElementById("dollImage");
-img.src=result.image;
-const dl=document.getElementById("dollDownload");
-dl.href=result.image;
-    dl.classList.add("show");
-    document.getElementById("dollEmpty").style.display="none";
-    document.getElementById("dollLoading").classList.remove("show");
-    document.getElementById("dollOutput").style.display="block";
-    document.getElementById("dollResult").classList.remove("empty");
+    const checkout=await response.json();
+    if(!response.ok||!checkout.checkoutUrl)throw new Error(checkout.error||"Die Zahlung konnte nicht gestartet werden.");
+    localStorage.setItem("nimmdoll_order",checkout.orderId);
+    window.location.href=checkout.checkoutUrl;
   }catch(e){
     err.textContent=e.message||"Es ist ein Fehler aufgetreten.";
     err.classList.add("show");
@@ -533,6 +557,21 @@ dl.href=result.image;
   }
 }
 document.getElementById("dollGenerate").addEventListener("click",createDoll);
+
+(function resumeNimmDollAfterCheckout(){
+  const params=new URLSearchParams(window.location.search);
+  const checkout=params.get("checkout");
+  const orderId=params.get("order")||localStorage.getItem("nimmdoll_order");
+  if(checkout==="success" && orderId){
+    document.getElementById("nimm-doll")?.scrollIntoView({behavior:"smooth",block:"start"});
+    showPaidDollOrder(orderId);
+  }else if(checkout==="cancelled"){
+    const err=document.getElementById("dollError");
+    err.textContent="Zahlung abgebrochen. Es wurde keine Doll erstellt.";
+    err.classList.add("show");
+    localStorage.removeItem("nimmdoll_order");
+  }
+})();
 
 const selections={platform:"TikTok",goal:"Reichweite"};
 document.querySelectorAll(".choices").forEach(group=>{
