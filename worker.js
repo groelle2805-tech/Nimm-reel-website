@@ -20,7 +20,7 @@ function json(data, status = 200) {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "https://www.nimmreel.de",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, X-NIMMDOLL-Test-Key",
     },
   });
 }
@@ -160,7 +160,7 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (request.method === "OPTIONS") {
-      return new Response("", { status: 204, headers: { "Access-Control-Allow-Origin": "https://www.nimmreel.de", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type" } });
+      return new Response("", { status: 204, headers: { "Access-Control-Allow-Origin": "https://www.nimmreel.de", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type, X-NIMMDOLL-Test-Key" } });
     }
     if (!env.DB || !env.UPLOADS || !env.STRIPE_SECRET_KEY || !env.STRIPE_WEBHOOK_SECRET || !env.RUNWAYML_API_SECRET) {
       return json({ error: "Server-Konfiguration unvollständig." }, 500);
@@ -180,6 +180,33 @@ export default {
         }
       }
       return new Response("ok", { status: 200 });
+    }
+    if (url.pathname === "/api/doll/admin-test" && request.method === "POST") {
+      const supplied = request.headers.get("X-NIMMDOLL-Test-Key") || "";
+      if (!env.NIMMDOLL_TEST_KEY || supplied !== env.NIMMDOLL_TEST_KEY) {
+        return json({ error: "Admin-Schlüssel ungültig." }, 401);
+      }
+      let body;
+      try { body = await request.json(); } catch { return json({ error: "Ungültige Anfrage." }, 400); }
+      const parsed = parseDataUrl(body.image);
+      if (!parsed) return json({ error: "Bitte ein gültiges Foto hochladen." }, 400);
+      if (parsed.bytes.byteLength > 10 * 1024 * 1024) return json({ error: "Das Foto darf maximal 10 MB groß sein." }, 413);
+      const style = typeof body.style === "string" && STYLE_PROMPTS[body.style] ? body.style : "Fashion";
+      const accessories = Array.isArray(body.accessories) ? body.accessories.slice(0, 9) : [];
+      const name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "";
+      if (style === "Doll in Box" && !name) return json({ error: "Bitte einen Namen für die Doll eingeben." }, 400);
+      const orderId = crypto.randomUUID();
+      const uploadKey = `orders/${orderId}/photo`;
+      await env.UPLOADS.put(uploadKey, parsed.bytes, { customMetadata: { mime: parsed.mime } });
+      try {
+        await env.DB.prepare(`INSERT INTO orders (id, payment_status, style, name, accessories, image_data, generation_status, paid_at) VALUES (?, 'paid', ?, ?, ?, ?, 'waiting', CURRENT_TIMESTAMP)`).bind(orderId, style, name, JSON.stringify(accessories), uploadKey).run();
+        ctx.waitUntil(startGeneration(env, orderId));
+        return json({ orderId, adminTest: true });
+      } catch (error) {
+        await env.UPLOADS.delete(uploadKey).catch(() => {});
+        await env.DB.prepare(`DELETE FROM orders WHERE id = ?`).bind(orderId).run().catch(() => {});
+        return json({ error: error?.message || "Admin-Test konnte nicht gestartet werden." }, 500);
+      }
     }
     if (url.pathname === "/api/doll/checkout" && request.method === "POST") {
       let body;
