@@ -551,7 +551,9 @@ async function createDoll(){
     localStorage.setItem("nimmdoll_order",checkout.orderId);
     window.location.href=checkout.checkoutUrl;
   }catch(e){
-    err.textContent=e.message||"Es ist ein Fehler aufgetreten.";
+    const detail = e && e.message ? e.message : String(e || "Unbekannter Fehler");
+    console.error("NIMM_DOLL_CHECKOUT_ERROR", e);
+    err.textContent="Technischer Fehler: "+detail;
     err.classList.add("show");
     setDollBusy(false);
   }
