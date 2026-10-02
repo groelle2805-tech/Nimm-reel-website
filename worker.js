@@ -1,154 +1,204 @@
-/**
- * NIMM-DOLL backend for Cloudflare Workers
- * Required secret: RUNWAYML_API_SECRET
- *
- * Routes:
- * POST /api/doll  -> starts a Runway image task
- * GET  /api/doll?task=<id> -> polls task status
- *
- * The browser sends the uploaded image as a data URI.
- * The secret is NEVER sent to the browser.
- */
-
 const RUNWAY_API = "https://api.dev.runwayml.com/v1";
 
+const PRICE_STANDARD = "price_1UM7omEBiYsyt7YHIq960Ajw";
+const PRICE_BOX = "price_1UM7sIEBiYsyt7YHwEU0XT1y";
+
 const STYLE_PROMPTS = {
-  "Fashion": "premium collectible fashion doll, polished vinyl-like materials, editorial fashion styling, full-body, sophisticated studio lighting",
-  "Glam": "glamorous collectible fashion doll, luxury evening styling, glossy details, dramatic studio lighting, premium beauty editorial",
-  "Y2K": "playful early-2000s inspired fashion doll, trendy Y2K clothing, glossy accessories, vibrant but premium styling",
-  "Luxury": "ultra-premium luxury fashion doll, elegant designer-inspired styling without logos, sophisticated accessories, high-end product photography",
-  "Business": "confident professional fashion doll, modern business outfit, elegant accessories, premium collectible figure photography",
-  "Summer": "stylish summer fashion doll, chic resort outfit, bright natural light, premium collectible product photography",
-  "Doll in Box": "premium collectible fashion doll displayed inside a realistic clear blister package, personalized collector packaging, coordinated accessories, luxury retail product photography"
+  Fashion: "premium collectible fashion doll, polished vinyl-like materials, editorial fashion styling, full-body, sophisticated studio lighting",
+  Glam: "glamorous collectible fashion doll, luxury evening styling, glossy details, dramatic studio lighting, premium beauty editorial",
+  Y2K: "playful early-2000s inspired fashion doll, trendy Y2K clothing, glossy accessories, vibrant but premium styling",
+  Luxury: "ultra-premium luxury fashion doll, elegant designer-inspired styling without logos, sophisticated accessories, high-end product photography",
+  Business: "confident professional fashion doll, modern business outfit, elegant accessories, premium collectible figure photography",
+  Summer: "stylish summer fashion doll, chic resort outfit, bright natural light, premium collectible product photography",
+  "Doll in Box": "premium collectible fashion doll displayed inside a realistic clear blister package, personalized collector packaging, coordinated accessories, luxury retail product photography",
 };
 
-function json(data, status=200) {
+function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
-      "Content-Type":"application/json",
-      "Access-Control-Allow-Origin":"*"
-    }
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "https://www.nimmreel.de",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
   });
 }
 
-function promptFor(style, name, accessories = []) {
+function promptFor(style, accessories = []) {
   const styleText = STYLE_PROMPTS[style] || STYLE_PROMPTS.Fashion;
-
-  const accessoryText =
-    Array.isArray(accessories) && accessories.length
-      ? accessories.slice(0, 9).join(", ")
-      : "keine";
-
+  const accessoryText = Array.isArray(accessories) && accessories.length ? accessories.slice(0, 9).join(", ") : "keine";
   return `${styleText}. Create a premium collectible doll of the SAME PERSON shown in @person. Preserve the person's face, hair, skin tone, tattoos and piercings. Make the doll clearly recognizable as the same person.
 
 For Doll in Box: create a beautiful premium fashion-toy package with a transparent blister, elegant colorful background, balanced layout and individual compartments for the doll and accessories. Accessories: ${accessoryText}. No logos, no brand names and no random writing.`;
 }
 
-export default {
-  async fetch(request, env) {
-    if (request.method === "OPTIONS") {
-      return new Response("", {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin":"*",
-          "Access-Control-Allow-Methods":"GET,POST,OPTIONS",
-          "Access-Control-Allow-Headers":"Content-Type"
-        }
-      });
-    }
+function parseDataUrl(value) {
+  const match = /^data:(image\/(?:jpeg|jpg|png|webp));base64,(.+)$/s.exec(value || "");
+  if (!match) return null;
+  const mime = match[1] === "image/jpg" ? "image/jpeg" : match[1];
+  try {
+    const binary = atob(match[2]);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return { mime, bytes };
+  } catch { return null; }
+}
 
-    const url = new URL(request.url);
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  return btoa(binary);
+}
 
-    if (!url.pathname.startsWith("/api/doll")) {
-      return new Response("NIMM-DOLL API");
-    }
+async function verifyStripeSignature(rawBody, signatureHeader, secret) {
+  if (!signatureHeader || !secret) return false;
+  const parts = signatureHeader.split(",");
+  const timestamp = parts.find((p) => p.startsWith("t="))?.slice(2);
+  const signatures = parts.filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
+  if (!timestamp || signatures.length === 0) return false;
+  const age = Math.abs(Math.floor(Date.now() / 1000) - Number(timestamp));
+  if (!Number.isFinite(age) || age > 300) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(`${timestamp}.${rawBody}`));
+  const expected = [...new Uint8Array(mac)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return signatures.some((sig) => sig === expected);
+}
 
-    if (!env.RUNWAYML_API_SECRET) {
-      return json({error:"RUNWAYML_API_SECRET fehlt im Worker."},500);
-    }
+async function createStripeSession(env, orderId, style) {
+  const priceId = style === "Doll in Box" ? PRICE_BOX : PRICE_STANDARD;
+  const form = new URLSearchParams();
+  form.set("mode", "payment");
+  form.set("line_items[0][price]", priceId);
+  form.set("line_items[0][quantity]", "1");
+  form.set("metadata[order_id]", orderId);
+  form.set("success_url", `https://www.nimmreel.de/?checkout=success&order=${encodeURIComponent(orderId)}&session_id={CHECKOUT_SESSION_ID}#nimm-doll`);
+  form.set("cancel_url", `https://www.nimmreel.de/?checkout=cancelled&order=${encodeURIComponent(orderId)}#nimm-doll`);
+  const response = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.STRIPE_SECRET_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body: form.toString(),
+  });
+  const data = await response.json();
+  if (!response.ok || !data.url) throw new Error(data?.error?.message || "Stripe Checkout konnte nicht erstellt werden.");
+  return data;
+}
 
-    if (request.method === "POST") {
-      let body;
-      try {
-        body = await request.json();
-      } catch {
-        return json({error:"Ungültige Anfrage."},400);
-      }
-
-      if (!body.image || typeof body.image !== "string" || !body.image.startsWith("data:image/")) {
-        return json({error:"Bitte ein gültiges Bild hochladen."},400);
-      }
-
-      const accessories = Array.isArray(body.accessories) ? body.accessories : [];
-
-      const payload = {
-        model: "gen4_image",
-        ratio: "1024:1024",
-        promptText: promptFor(body.style, body.name, accessories),
-        referenceImages: [{ uri: body.image, tag: "person" }]
-      };
-console.log("RUNWAY_PAYLOAD_CHECK", JSON.stringify({model: payload.model, ratio: payload.ratio}));
-      const r = await fetch(`${RUNWAY_API}/text_to_image`, {
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json",
-          "Authorization":`Bearer ${env.RUNWAYML_API_SECRET}`,
-          "X-Runway-Version":"2024-11-06"
-        },
-        body:JSON.stringify(payload)
-      });
-
-      const data = await r.json();
-      console.log("RUNWAY_TASK_RESPONSE", JSON.stringify(data));
-console.log("RUNWAY_RESPONSE", JSON.stringify(data));
-      if (!r.ok) {
-        return json({
-          error:data?.error || data?.message || "KI-Anfrage fehlgeschlagen.",
-          issues:data?.issues || undefined
-        },500);
-      }
-
-      return json({taskId:data.id});
-    }
-
-    if (request.method === "GET") {
-      const taskId = url.searchParams.get("task");
-
-      if (!taskId) {
-        return json({error:"task fehlt."},400);
-      }
-
-      const r = await fetch(`${RUNWAY_API}/tasks/${encodeURIComponent(taskId)}`, {
-        headers:{
-          "Authorization":`Bearer ${env.RUNWAYML_API_SECRET}`,
-          "X-Runway-Version":"2024-11-06"
-        }
-      });
-
-      const data = await r.json();
-
-      if (!r.ok) {
-        return json({
-          error:data?.error || data?.message || "Task-Abfrage fehlgeschlagen.",
-          issues:data?.issues || undefined
-        },500);
-      }
-
-      if (data.status === "SUCCEEDED") {
-        return json({status:"SUCCEEDED", image:data.output?.[0]});
-      }
-
-      if (data.status === "FAILED") {
-        return json({
-          status:"FAILED",
-          error:data.failure || "Bildgenerierung fehlgeschlagen."
-        });
-      }
-
-      return json({status:data.status || "RUNNING"});
-    }
-
-    return json({error:"Methode nicht unterstützt."},405);
+async function startGeneration(env, orderId) {
+  const claim = await env.DB.prepare(`UPDATE orders SET generation_status = 'starting', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND payment_status = 'paid' AND generation_status = 'waiting'`).bind(orderId).run();
+  if (!claim.meta?.changes) return;
+  try {
+    const order = await env.DB.prepare(`SELECT * FROM orders WHERE id = ?`).bind(orderId).first();
+    if (!order) throw new Error("Bestellung nicht gefunden.");
+    const object = await env.UPLOADS.get(order.image_data);
+    if (!object) throw new Error("Kundenfoto nicht gefunden.");
+    const imageBuffer = await object.arrayBuffer();
+    const mime = object.customMetadata?.mime || "image/jpeg";
+    const imageData = `data:${mime};base64,${arrayBufferToBase64(imageBuffer)}`;
+    let accessories = [];
+    try { accessories = order.accessories ? JSON.parse(order.accessories) : []; } catch { accessories = []; }
+    const payload = {
+      model: "gen4_image",
+      ratio: "1024:1024",
+      promptText: promptFor(order.style, accessories),
+      referenceImages: [{ uri: imageData, tag: "person" }],
+    };
+    const response = await fetch(`${RUNWAY_API}/text_to_image`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.RUNWAYML_API_SECRET}`, "X-Runway-Version": "2024-11-06" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.id) throw new Error(data?.error || data?.message || "Runway konnte nicht gestartet werden.");
+    await env.DB.prepare(`UPDATE orders SET runway_task_id = ?, generation_status = 'running', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(data.id, orderId).run();
+  } catch (error) {
+    await env.DB.prepare(`UPDATE orders SET generation_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(orderId).run();
+    console.error("GENERATION_ERROR", orderId, error);
   }
+}
+
+async function pollOrder(env, orderId) {
+  const order = await env.DB.prepare(`SELECT id, payment_status, generation_status, runway_task_id, result_image, image_data FROM orders WHERE id = ?`).bind(orderId).first();
+  if (!order) return json({ error: "Bestellung nicht gefunden." }, 404);
+  if (order.generation_status !== "running" || !order.runway_task_id) {
+    return json({ orderId: order.id, paymentStatus: order.payment_status, generationStatus: order.generation_status, image: order.result_image || null });
+  }
+  const response = await fetch(`${RUNWAY_API}/tasks/${encodeURIComponent(order.runway_task_id)}`, {
+    headers: { Authorization: `Bearer ${env.RUNWAYML_API_SECRET}`, "X-Runway-Version": "2024-11-06" },
+  });
+  const data = await response.json();
+  if (!response.ok) return json({ error: data?.error || data?.message || "Runway-Status konnte nicht abgefragt werden." }, 502);
+  if (data.status === "SUCCEEDED") {
+    const image = data.output?.[0] || null;
+    await env.DB.prepare(`UPDATE orders SET generation_status = 'succeeded', result_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(image, orderId).run();
+    if (order.image_data) await env.UPLOADS.delete(order.image_data).catch(() => {});
+    return json({ orderId, paymentStatus: "paid", generationStatus: "succeeded", image });
+  }
+  if (data.status === "FAILED") {
+    await env.DB.prepare(`UPDATE orders SET generation_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(orderId).run();
+    return json({ orderId, paymentStatus: "paid", generationStatus: "failed" });
+  }
+  return json({ orderId, paymentStatus: "paid", generationStatus: "running" });
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (request.method === "OPTIONS") {
+      return new Response("", { status: 204, headers: { "Access-Control-Allow-Origin": "https://www.nimmreel.de", "Access-Control-Allow-Methods": "GET,POST,OPTIONS", "Access-Control-Allow-Headers": "Content-Type" } });
+    }
+    if (!env.DB || !env.UPLOADS || !env.STRIPE_SECRET_KEY || !env.STRIPE_WEBHOOK_SECRET || !env.RUNWAYML_API_SECRET) {
+      return json({ error: "Server-Konfiguration unvollständig." }, 500);
+    }
+    if (url.pathname === "/api/stripe/webhook" && request.method === "POST") {
+      const rawBody = await request.text();
+      const valid = await verifyStripeSignature(rawBody, request.headers.get("Stripe-Signature"), env.STRIPE_WEBHOOK_SECRET);
+      if (!valid) return new Response("Invalid signature", { status: 400 });
+      let event;
+      try { event = JSON.parse(rawBody); } catch { return new Response("Invalid JSON", { status: 400 }); }
+      if (event.type === "checkout.session.completed") {
+        const session = event.data?.object;
+        const orderId = session?.metadata?.order_id;
+        if (orderId && session?.payment_status === "paid") {
+          await env.DB.prepare(`UPDATE orders SET stripe_session_id = ?, payment_status = 'paid', paid_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(session.id, orderId).run();
+          ctx.waitUntil(startGeneration(env, orderId));
+        }
+      }
+      return new Response("ok", { status: 200 });
+    }
+    if (url.pathname === "/api/doll/checkout" && request.method === "POST") {
+      let body;
+      try { body = await request.json(); } catch { return json({ error: "Ungültige Anfrage." }, 400); }
+      const parsed = parseDataUrl(body.image);
+      if (!parsed) return json({ error: "Bitte ein gültiges Foto hochladen." }, 400);
+      if (parsed.bytes.byteLength > 10 * 1024 * 1024) return json({ error: "Das Foto darf maximal 10 MB groß sein." }, 413);
+      const style = typeof body.style === "string" && STYLE_PROMPTS[body.style] ? body.style : "Fashion";
+      const accessories = Array.isArray(body.accessories) ? body.accessories.slice(0, 9) : [];
+      const orderId = crypto.randomUUID();
+      const uploadKey = `orders/${orderId}/photo`;
+      await env.UPLOADS.put(uploadKey, parsed.bytes, { customMetadata: { mime: parsed.mime } });
+      try {
+        await env.DB.prepare(`INSERT INTO orders (id, payment_status, style, accessories, image_data, generation_status) VALUES (?, 'pending', ?, ?, ?, 'waiting')`).bind(orderId, style, JSON.stringify(accessories), uploadKey).run();
+        const session = await createStripeSession(env, orderId, style);
+        await env.DB.prepare(`UPDATE orders SET stripe_session_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(session.id, orderId).run();
+        return json({ orderId, checkoutUrl: session.url });
+      } catch (error) {
+        await env.UPLOADS.delete(uploadKey).catch(() => {});
+        await env.DB.prepare(`DELETE FROM orders WHERE id = ?`).bind(orderId).run().catch(() => {});
+        return json({ error: error?.message || "Checkout konnte nicht erstellt werden." }, 500);
+      }
+    }
+    if (url.pathname === "/api/doll" && request.method === "GET") {
+      const orderId = url.searchParams.get("order");
+      if (!orderId) return json({ error: "order fehlt." }, 400);
+      return pollOrder(env, orderId);
+    }
+    if (url.pathname === "/api/doll" && request.method === "POST") {
+      return json({ error: "Vor der Bildgenerierung ist eine Zahlung erforderlich." }, 402);
+    }
+    return new Response("NIMM-DOLL API", { status: 200 });
+  },
 };
