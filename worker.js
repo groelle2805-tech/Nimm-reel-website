@@ -25,11 +25,12 @@ function json(data, status = 200) {
   });
 }
 
-function promptFor(style, accessories = []) {
+function promptFor(style, name = "", accessories = []) {
   const accessoryText = Array.isArray(accessories) && accessories.length ? accessories.slice(0, 9).join(", ") : "keine";
+  const safeName = String(name || "").trim().slice(0, 40);
 
   if (style === "Doll in Box") {
-    return `@person as a premium collectible fashion doll in a transparent blister package. Keep @person's recognizable facial identity, facial proportions, hairstyle, hair color, skin tone and distinctive features consistent with the reference photo. Full-body doll with elegant collector packaging and individual accessory compartments. Accessories: ${accessoryText}. Luxury retail product photography, realistic polished doll materials, balanced composition.`;
+    return `@person as a premium collectible fashion doll in a transparent blister package. Keep @person's recognizable facial identity, facial proportions, hairstyle, hair color, skin tone and distinctive features consistent with the reference photo. Full-body doll with elegant collector packaging and individual accessory compartments. Accessories: ${accessoryText}. On the package front, display exactly this single name as the only visible text: "${safeName}". Spell the name exactly as provided. No other words, letters, symbols, logos, labels, pseudo-text, decorative writing or gibberish anywhere on the package. Luxury retail product photography, realistic polished doll materials, balanced composition.`;
   }
 
   const looks = {
@@ -114,7 +115,7 @@ async function startGeneration(env, orderId) {
     const payload = {
       model: "gen4_image",
       ratio: "1024:1024",
-      promptText: promptFor(order.style, accessories),
+      promptText: promptFor(order.style, order.name, accessories),
       referenceImages: [{ uri: imageData, tag: "person" }],
     };
     const response = await fetch(`${RUNWAY_API}/text_to_image`, {
@@ -188,11 +189,13 @@ export default {
       if (parsed.bytes.byteLength > 10 * 1024 * 1024) return json({ error: "Das Foto darf maximal 10 MB groß sein." }, 413);
       const style = typeof body.style === "string" && STYLE_PROMPTS[body.style] ? body.style : "Fashion";
       const accessories = Array.isArray(body.accessories) ? body.accessories.slice(0, 9) : [];
+      const name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "";
+      if (style === "Doll in Box" && !name) return json({ error: "Bitte einen Namen für die Doll eingeben." }, 400);
       const orderId = crypto.randomUUID();
       const uploadKey = `orders/${orderId}/photo`;
       await env.UPLOADS.put(uploadKey, parsed.bytes, { customMetadata: { mime: parsed.mime } });
       try {
-        await env.DB.prepare(`INSERT INTO orders (id, payment_status, style, accessories, image_data, generation_status) VALUES (?, 'pending', ?, ?, ?, 'waiting')`).bind(orderId, style, JSON.stringify(accessories), uploadKey).run();
+        await env.DB.prepare(`INSERT INTO orders (id, payment_status, style, name, accessories, image_data, generation_status) VALUES (?, 'pending', ?, ?, ?, ?, 'waiting')`).bind(orderId, style, name, JSON.stringify(accessories), uploadKey).run();
         const session = await createStripeSession(env, orderId, style);
         await env.DB.prepare(`UPDATE orders SET stripe_session_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(session.id, orderId).run();
         return json({ orderId, checkoutUrl: session.url });
