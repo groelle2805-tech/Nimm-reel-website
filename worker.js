@@ -124,7 +124,11 @@ async function startGeneration(env, orderId) {
       body: JSON.stringify(payload),
     });
     const data = await response.json();
-    if (!response.ok || !data.id) throw new Error(data?.error || data?.message || "Runway konnte nicht gestartet werden.");
+    if (!response.ok || !data.id) {
+      const runwayDetail = typeof data?.error === "string" ? data.error : (data?.error?.message || data?.message || JSON.stringify(data));
+      console.error("RUNWAY_START_ERROR", orderId, response.status, runwayDetail);
+      throw new Error(`Runway ${response.status}: ${runwayDetail || "Start fehlgeschlagen"}`);
+    }
     await env.DB.prepare(`UPDATE orders SET runway_task_id = ?, generation_status = 'running', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(data.id, orderId).run();
   } catch (error) {
     await env.DB.prepare(`UPDATE orders SET generation_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(orderId).run();
