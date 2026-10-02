@@ -154,8 +154,11 @@ async function pollOrder(env, orderId) {
     return json({ orderId, paymentStatus: "paid", generationStatus: "succeeded", image });
   }
   if (data.status === "FAILED") {
+    const failure = data.failure || data.failureCode || data.error || data.message || "Runway-Bildgenerierung fehlgeschlagen.";
+    const failureDetail = typeof failure === "string" ? failure : JSON.stringify(failure);
+    console.error("RUNWAY_TASK_FAILED", orderId, JSON.stringify(data));
     await env.DB.prepare(`UPDATE orders SET generation_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(orderId).run();
-    return json({ orderId, paymentStatus: "paid", generationStatus: "failed" });
+    return json({ orderId, paymentStatus: "paid", generationStatus: "failed", error: failureDetail });
   }
   return json({ orderId, paymentStatus: "paid", generationStatus: "running" });
 }
