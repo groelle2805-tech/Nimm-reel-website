@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>NIMM-DOLL Admin-Test</title>
+<style>
+:root{color-scheme:dark;--bg:#07090d;--p:#111722;--line:#293241;--lime:#c7ff3d;--muted:#a8b0bf}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif}
+main{max-width:620px;margin:auto;padding:28px 18px 60px}h1{margin:0 0 4px}h1 span{color:var(--lime)}p{color:var(--muted)}
+.card{background:var(--p);border:1px solid var(--line);border-radius:18px;padding:20px;margin:16px 0}
+label{display:block;font-weight:800;margin:14px 0 7px}input,select{width:100%;padding:13px;border-radius:10px;border:1px solid var(--line);background:#080c12;color:#fff;font:inherit}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.check{display:flex;gap:8px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:10px;color:#ddd}.check input{width:auto}
+button{width:100%;border:0;border-radius:12px;padding:15px;background:var(--lime);color:#091006;font-weight:900;font-size:16px;cursor:pointer;margin-top:18px}
+button:disabled{opacity:.6}.status{white-space:pre-wrap;margin-top:15px;color:#dce4ef}.err{color:#ff9d9d}.out{display:none;margin-top:18px}.out img{width:100%;border-radius:14px}
+small{color:var(--muted)}
+</style></head><body><main>
+<h1>NIMM-<span>DOLL</span> Admin-Test</h1>
+<p>Interner Test ohne Stripe. Runway-Credits werden weiterhin verbraucht.</p>
+<div class="card">
+<label>Admin-Schlüssel</label><input id="key" type="password" autocomplete="off" placeholder="NIMMDOLL_TEST_KEY">
+<small>Der Schlüssel wird nicht gespeichert.</small>
+<label>Foto</label><input id="photo" type="file" accept="image/jpeg,image/png,image/webp">
+<label>Name</label><input id="name" maxlength="40" placeholder="z. B. ANDRE">
+<label>Style</label><select id="style"><option>Fashion</option><option>Glam</option><option>Y2K</option><option>Luxury</option><option>Business</option><option>Summer</option><option selected>Doll in Box</option></select>
+<label>Accessoires</label><div class="grid">
+<label class="check"><input type="checkbox" value="Laptop">Laptop</label><label class="check"><input type="checkbox" value="Coffee cup">Kaffeebecher</label>
+<label class="check"><input type="checkbox" value="Camera">Kamera</label><label class="check"><input type="checkbox" value="Headphones">Kopfhörer</label>
+<label class="check"><input type="checkbox" value="Smartphone">Smartphone</label><label class="check"><input type="checkbox" value="Plant">Pflanze</label>
+</div>
+<button id="go">Kostenlosen Admin-Test erstellen</button><div id="status" class="status"></div>
+<div id="out" class="out"><img id="result" alt="NIMM-DOLL Testergebnis"></div>
+</div></main>
+<script>
+const $=id=>document.getElementById(id);
+function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+async function run(){
+ const key=$("key").value, file=$("photo").files[0], name=$("name").value.trim(), style=$("style").value, s=$("status");
+ s.className="status"; s.textContent="";
+ if(!key){s.className="status err";s.textContent="Admin-Schlüssel fehlt.";return}
+ if(!file){s.className="status err";s.textContent="Bitte Foto auswählen.";return}
+ if(style==="Doll in Box"&&!name){s.className="status err";s.textContent="Bitte Namen eingeben.";return}
+ $("go").disabled=true;
+ try{
+  s.textContent="Test wird gestartet …";
+  const image=await dataUrl(file);
+  const accessories=[...document.querySelectorAll('.check input:checked')].map(x=>x.value);
+  const r=await fetch("/api/doll/admin-test",{method:"POST",headers:{"Content-Type":"application/json","X-NIMMDOLL-Test-Key":key},body:JSON.stringify({image,name,style,accessories})});
+  const d=await r.json(); if(!r.ok)throw new Error(d.error||"Test konnte nicht gestartet werden.");
+  s.textContent="Runway erstellt deine Doll …";
+  for(let i=0;i<60;i++){
+   await new Promise(x=>setTimeout(x,2500));
+   const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
+   if(!p.ok)throw new Error(q.error||"Statusfehler");
+   if(q.generationStatus==="failed")throw new Error("Bildgenerierung fehlgeschlagen.");
+   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("out").style.display="block";s.textContent="Fertig.";return}
+  }
+  throw new Error("Die Erstellung dauert länger als erwartet.");
+ }catch(e){s.className="status err";s.textContent=e.message||String(e)}
+ finally{$("go").disabled=false}
+}
+$("go").addEventListener("click",run);
+</script></body></html>
