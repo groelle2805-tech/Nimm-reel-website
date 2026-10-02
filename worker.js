@@ -1,7 +1,7 @@
 const RUNWAY_API = "https://api.dev.runwayml.com/v1";
 
 const PRICE_STANDARD = "price_1UM7omEBiYsyt7YHIq960Ajw";
-const PRICE_BOX = "price_1UM7sIEBiYsyt7YHwEU0XT1y";
+const PRICE_BOX = "price_1UM7sIEBiYsyt7YHwEUOXTly";
 
 const STYLE_PROMPTS = {
   Fashion: "premium collectible fashion doll, polished vinyl-like materials, editorial fashion styling, full-body, sophisticated studio lighting",
