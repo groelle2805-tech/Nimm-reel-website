@@ -26,11 +26,22 @@ function json(data, status = 200) {
 }
 
 function promptFor(style, accessories = []) {
-  const styleText = STYLE_PROMPTS[style] || STYLE_PROMPTS.Fashion;
   const accessoryText = Array.isArray(accessories) && accessories.length ? accessories.slice(0, 9).join(", ") : "keine";
-  return `${styleText}. Create a premium collectible doll of the SAME PERSON shown in @person. Preserve the person's face, hair, skin tone, tattoos and piercings. Make the doll clearly recognizable as the same person.
 
-For Doll in Box: create a beautiful premium fashion-toy package with a transparent blister, elegant colorful background, balanced layout and individual compartments for the doll and accessories. Accessories: ${accessoryText}. No logos, no brand names and no random writing.`;
+  if (style === "Doll in Box") {
+    return `@person as a premium collectible fashion doll in a transparent blister package. Keep @person's recognizable facial identity, facial proportions, hairstyle, hair color, skin tone and distinctive features consistent with the reference photo. Full-body doll with elegant collector packaging and individual accessory compartments. Accessories: ${accessoryText}. Luxury retail product photography, realistic polished doll materials, balanced composition.`;
+  }
+
+  const looks = {
+    Fashion: "editorial fashion outfit, sophisticated studio lighting, premium collectible doll photography",
+    Glam: "luxury evening outfit, glamorous styling, polished studio lighting, premium collectible doll photography",
+    Y2K: "early-2000s inspired outfit and accessories, playful premium collectible doll photography",
+    Luxury: "elegant luxury outfit and accessories, sophisticated premium collectible doll photography",
+    Business: "modern professional business outfit, confident premium collectible doll photography",
+    Summer: "chic summer resort outfit, bright natural light, premium collectible doll photography",
+  };
+
+  return `@person as a premium collectible fashion doll. Keep @person's recognizable facial identity, facial proportions, hairstyle, hair color, skin tone and distinctive features consistent with the reference photo. Full-body composition. ${looks[style] || looks.Fashion}.`;
 }
 
 function parseDataUrl(value) {
