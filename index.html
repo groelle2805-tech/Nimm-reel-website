@@ -493,8 +493,9 @@ async function makeDollPortrait(src){
 
 async function buildCustomerDollDownload(){
   const img=document.getElementById("dollImage");
-  const name=(document.getElementById("dollName").value||"").trim().toUpperCase();
-  const isBox=dollState.style==="Doll in Box";
+  const saved=JSON.parse(sessionStorage.getItem("nimmdoll_result")||"{}");
+  const name=(saved.name||document.getElementById("dollName").value||"").trim().toUpperCase();
+  const isBox=(saved.style||dollState.style)==="Doll in Box";
   const err=document.getElementById("dollError");
   try{
     const r=await fetch(img.src); if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
@@ -502,11 +503,14 @@ async function buildCustomerDollDownload(){
     const canvas=document.createElement("canvas"); canvas.width=bmp.width; canvas.height=bmp.height;
     const ctx=canvas.getContext("2d"); ctx.drawImage(bmp,0,0);
     if(isBox&&name){
-      const x=canvas.width*.30,y=canvas.height*(1-.115-.07),w=canvas.width*.40,h=canvas.height*.07;
-      ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#f4f4f4";ctx.shadowColor="rgba(0,0,0,.75)";ctx.shadowBlur=Math.max(2,canvas.width*.003);
-      let fs=Math.max(20,Math.floor(canvas.width*.045));ctx.font=`900 ${fs}px Arial,sans-serif`;
-      while(ctx.measureText(name).width>w*.9&&fs>14){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}
-      ctx.fillText(name,x+w/2,y+h/2,w*.9);ctx.restore();
+      const W=canvas.width,H=canvas.height;
+      const tx=W*.10,ty=H*.04,tw=W*.80,th=H*.12;
+      ctx.fillStyle="#070a0d";ctx.fillRect(tx,ty,tw,th);ctx.strokeStyle="#baff2f";ctx.lineWidth=Math.max(3,W*.004);ctx.strokeRect(tx,ty,tw,th);
+      ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font=`900 ${Math.max(24,Math.floor(W*.048))}px Arial,sans-serif`;ctx.fillText("NIMM-DOLL",W/2,ty+th*.38,tw*.9);
+      ctx.fillStyle="#baff2f";ctx.font=`900 ${Math.max(12,Math.floor(W*.022))}px Arial,sans-serif`;ctx.fillText("LIMITED EDITION",W/2,ty+th*.73,tw*.9);
+      const bx=W*.10,by=H*.85,bw=W*.80,bh=H*.11;ctx.fillStyle="#070a0d";ctx.fillRect(bx,by,bw,bh);ctx.strokeStyle="#baff2f";ctx.strokeRect(bx,by,bw,bh);
+      ctx.fillStyle="#fff";let fs=Math.max(24,Math.floor(W*.052));ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name).width>bw*.86&&fs>16){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name,W/2,by+bh*.40,bw*.9);
+      ctx.fillStyle="#baff2f";ctx.font=`900 ${Math.max(10,Math.floor(W*.016))}px Arial,sans-serif`;ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,by+bh*.76,bw*.9);
     }
     canvas.toBlob(b=>{if(!b)return;const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`NIMM-DOLL-${name||"Bild"}.jpg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)},"image/jpeg",.95);
   }catch(e){err.textContent=e.message||"Bild konnte nicht gespeichert werden.";err.classList.add("show")}
@@ -532,6 +536,9 @@ async function showPaidDollOrder(orderId){
     if(!result)throw new Error("Die Erstellung dauert länger als erwartet. Bitte lade die Seite gleich erneut.");
     const img=document.getElementById("dollImage");
     img.src=result.image;
+    if(result.name)document.getElementById("dollName").value=result.name;
+    if(result.style)dollState.style=result.style;
+    sessionStorage.setItem("nimmdoll_result",JSON.stringify({name:result.name||"",style:result.style||""}));
     const dl=document.getElementById("dollDownload");
     dl.classList.add("show");
     document.getElementById("dollEmpty").style.display="none";
