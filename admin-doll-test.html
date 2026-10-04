@@ -75,11 +75,10 @@ async function renderAdminFinal(source,name){
  const blob=await r.blob(),bmp=await createImageBitmap(blob),W=1080,H=1350,canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d"),lime="#baff2f";
  ctx.fillStyle="#080a0d";ctx.fillRect(0,0,W,H);ctx.strokeStyle=lime;ctx.lineWidth=5;ctx.strokeRect(70,55,W-140,H-110);
  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 68px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,112);ctx.fillStyle=lime;ctx.font="900 24px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,158);
- const artX=78,artY=185,artW=924,artH=930,cropTop=Math.round(bmp.height*.16),cropBottom=Math.round(bmp.height*.18);
- const srcH=bmp.height-cropTop-cropBottom;
- // Zoom substantially into Runway's central retail package instead of displaying its surrounding studio canvas.
- const zoom=2.48,scale=Math.max(artW/bmp.width,artH/srcH)*zoom,dw=bmp.width*scale,dh=srcH*scale;
- ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,22);ctx.clip();ctx.drawImage(bmp,0,cropTop,bmp.width,srcH,artX+(artW-dw)/2,artY+(artH-dh)/2,dw,dh);ctx.restore();
+ const artX=78,artY=185,artW=924,artH=930;
+ // Preserve the complete Runway image; never crop the doll or accessories.
+ const scale=Math.min(artW/bmp.width,artH/bmp.height),dw=bmp.width*scale,dh=bmp.height*scale;
+ ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,22);ctx.clip();ctx.fillStyle="#11151a";ctx.fillRect(artX,artY,artW,artH);ctx.drawImage(bmp,artX+(artW-dw)/2,artY+(artH-dh)/2,dw,dh);ctx.restore();
  ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(artX,artY,artW,artH);
  ctx.fillStyle="#080a0d";ctx.fillRect(105,1130,870,145);ctx.strokeStyle=lime;ctx.strokeRect(105,1130,870,145);
  ctx.fillStyle="#fff";let fs=58;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name||"NIMM-DOLL").width>790&&fs>28){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1182);
