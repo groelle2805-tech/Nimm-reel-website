@@ -109,14 +109,21 @@ async function startGeneration(env, orderId) {
     if (!object) throw new Error("Kundenfoto nicht gefunden.");
     const imageBuffer = await object.arrayBuffer();
     const mime = object.customMetadata?.mime || "image/jpeg";
-    const imageData = `data:${mime};base64,${arrayBufferToBase64(imageBuffer)}`;
+    const uploadResponse = await fetch(`${RUNWAY_API}/uploads`, {
+      method: "POST",
+      headers: { "Content-Type": mime, Authorization: `Bearer ${env.RUNWAYML_API_SECRET}`, "X-Runway-Version": "2024-11-06" },
+      body: imageBuffer,
+    });
+    const uploadData = await uploadResponse.json();
+    const runwayUri = uploadData.runwayUri || uploadData.uri || uploadData.url;
+    if (!uploadResponse.ok || !runwayUri) throw new Error(`Runway upload ${uploadResponse.status}: ${JSON.stringify(uploadData)}`);
     let accessories = [];
     try { accessories = order.accessories ? JSON.parse(order.accessories) : []; } catch { accessories = []; }
     const payload = {
       model: "gen4_image",
       ratio: "1920:1080",
       promptText: promptFor(order.style, order.name, accessories),
-      referenceImages: [{ uri: imageData, tag: "person" }],
+      referenceImages: [{ uri: runwayUri, tag: "person" }],
     };
     const response = await fetch(`${RUNWAY_API}/text_to_image`, {
       method: "POST",
