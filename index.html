@@ -295,7 +295,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
     <label class="doll-accessory"><input type="checkbox" value="Hund"><span>🐕 Hund</span><span class="acc-check">✓</span></label>
   </div>
 </div>
-<button class="btn primary doll-generate" id="dollGenerate">Jetzt für 2,99 € erstellen ✦</button>
+<div id="dollPurchaseInfo" style="margin:14px 0 10px;padding:14px;border:1px solid rgba(199,255,61,.28);border-radius:12px;background:rgba(199,255,61,.05);font-size:12px;line-height:1.55;color:#b8c0ce"><strong style="color:#fff">Digitale Einzelleistung · einmalige Zahlung</strong><br><span id="dollPurchaseText">NIMM-DOLL: 2,99 € einmalig. Du erhältst ein individuell KI-generiertes Bild zum Herunterladen.</span></div><label style="display:flex;gap:9px;align-items:flex-start;margin:10px 0 12px;font-size:12px;line-height:1.45;color:#b8c0ce"><input id="dollImmediateConsent" type="checkbox" style="margin-top:2px"><span>Ich stimme ausdrücklich zu, dass mit der Erstellung meiner digitalen NIMM-DOLL direkt nach der Zahlung begonnen wird. Mir ist bekannt, dass mein Widerrufsrecht bei vollständiger Vertragserfüllung erlischt.</span></label><button class="btn primary doll-generate" id="dollGenerate">Jetzt für 2,99 € erstellen ✦</button>
       <div class="doll-error" id="dollError"></div><button class="btn primary" id="dollRetry" type="button" style="display:none;margin-top:10px">Erstellung erneut starten – ohne neue Zahlung</button>
       <div class="doll-note">Dein Foto wird ausschließlich zur Erstellung deiner NIMM-DOLL verarbeitet und an den KI-Dienst übermittelt. Nach erfolgreicher Erstellung löschen wir das hochgeladene Ausgangsfoto aus unserem Speicher. Bei einer fehlgeschlagenen Erstellung bleibt es vorübergehend gespeichert, damit du die bereits bezahlte Erstellung ohne erneute Zahlung wiederholen kannst. Details findest du in der Datenschutzerklärung.</div>
     </div>
@@ -412,7 +412,7 @@ document.querySelectorAll(".doll-style").forEach(b=>{
     dollState.style=b.dataset.style;
     const isBox=dollState.style==="Doll in Box";
     const payBtn=document.getElementById("dollGenerate"),nameInput=document.getElementById("dollName"),nameHint=document.getElementById("dollNameHint");
-    if(payBtn) payBtn.textContent=isBox?"Jetzt für 4,99 € erstellen ✦":"Jetzt für 2,99 € erstellen ✦";
+    if(payBtn) payBtn.textContent=isBox?"Jetzt für 4,99 € erstellen ✦":"Jetzt für 2,99 € erstellen ✦"; const purchaseText=document.getElementById("dollPurchaseText"); if(purchaseText) purchaseText.textContent=isBox?"NIMM-DOLL in Box: 4,99 € einmalig. Du erhältst ein personalisiertes KI-generiertes Sammlerbild mit deinem Namen zum Herunterladen.":"NIMM-DOLL: 2,99 € einmalig. Du erhältst ein individuell KI-generiertes Bild zum Herunterladen.";
     if(nameInput){nameInput.required=isBox;nameInput.placeholder=isBox?"Pflichtfeld, z. B. Sophie":"z. B. Sophie";}
     if(nameHint) nameHint.textContent=isBox?"(Pflichtfeld für Doll in Box)":"(optional)";
   });
@@ -567,6 +567,8 @@ async function createDoll(){
   const err=document.getElementById("dollError");
   err.classList.remove("show");
   const retry=document.getElementById("dollRetry");if(retry){retry.style.display="none";retry.disabled=false;}
+  const consent=document.getElementById("dollImmediateConsent");
+  if(!consent?.checked){err.textContent="Bitte bestätige vor der Zahlung den sofortigen Beginn der digitalen Leistung.";err.classList.add("show");return;}
   if(!dollState.file){
     err.textContent="Bitte zuerst ein Foto auswählen.";
     err.classList.add("show");
