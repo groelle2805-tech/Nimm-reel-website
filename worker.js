@@ -143,7 +143,7 @@ async function pollOrder(env, orderId) {
     return json({ orderId: order.id, paymentStatus: "paid", generationStatus: "failed", recoverable: true, image: null, name: order.name || "", style: order.style || "" });
   }
   if (order.generation_status !== "running" || !order.runway_task_id) {
-    return json({ orderId: order.id, paymentStatus: order.payment_status, generationStatus: order.generation_status, image: order.result_image || null, name: order.name || "", style: order.style || "" });
+    return json({ orderId: order.id, paymentStatus: order.payment_status, generationStatus: order.generation_status, image: order.result_image ? (order.result_image.startsWith("orders/") ? `/api/doll/result?order=${encodeURIComponent(order.id)}` : order.result_image) : null, name: order.name || "", style: order.style || "" });
   }
   const response = await fetch(`${RUNWAY_API}/tasks/${encodeURIComponent(order.runway_task_id)}`, {
     headers: { Authorization: `Bearer ${env.RUNWAYML_API_SECRET}`, "X-Runway-Version": "2024-11-06" },
@@ -152,9 +152,22 @@ async function pollOrder(env, orderId) {
   if (!response.ok) return json({ error: data?.error || data?.message || "Runway-Status konnte nicht abgefragt werden." }, 502);
   if (data.status === "SUCCEEDED") {
     const image = data.output?.[0] || null;
-    await env.DB.prepare(`UPDATE orders SET generation_status = 'succeeded', result_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(image, orderId).run();
+    if (!image) return json({ error: "Runway hat kein Ergebnisbild geliefert." }, 502);
+    const resultKey = `orders/${orderId}/result`;
+    let storedResult = false;
+    try {
+      const imageResponse = await fetch(image);
+      if (!imageResponse.ok) throw new Error("Runway-Ergebnis konnte nicht gespeichert werden.");
+      const contentType = imageResponse.headers.get("content-type") || "image/jpeg";
+      await env.UPLOADS.put(resultKey, imageResponse.body, { httpMetadata: { contentType } });
+      storedResult = true;
+    } catch (error) {
+      console.error("RESULT_STORE_FAILED", orderId, error?.message || error);
+    }
+    const resultRef = storedResult ? resultKey : image;
+    await env.DB.prepare(`UPDATE orders SET generation_status = 'succeeded', result_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(resultRef, orderId).run();
     if (order.image_data) await env.UPLOADS.delete(order.image_data).catch(() => {});
-    return json({ orderId, paymentStatus: "paid", generationStatus: "succeeded", image, name: order.name || "", style: order.style || "" });
+    return json({ orderId, paymentStatus: "paid", generationStatus: "succeeded", image: storedResult ? `/api/doll/result?order=${encodeURIComponent(orderId)}` : image, name: order.name || "", style: order.style || "" });
   }
   if (data.status === "FAILED") {
     const failure = data.failure || data.failureCode || data.error || data.message || "Runway-Bildgenerierung fehlgeschlagen.";
@@ -241,6 +254,19 @@ export default {
         await env.DB.prepare(`DELETE FROM orders WHERE id = ?`).bind(orderId).run().catch(() => {});
         return json({ error: error?.message || "Checkout konnte nicht erstellt werden." }, 500);
       }
+    }
+    if (url.pathname === "/api/doll/result" && request.method === "GET") {
+      const orderId = (url.searchParams.get("order") || "").trim();
+      if (!orderId) return json({ error: "Bestellnummer fehlt." }, 400);
+      const order = await env.DB.prepare(`SELECT payment_status, generation_status, result_image FROM orders WHERE id = ?`).bind(orderId).first();
+      if (!order || order.payment_status !== "paid" || order.generation_status !== "succeeded") return json({ error: "Ergebnis nicht verfügbar." }, 404);
+      if (!order.result_image || !order.result_image.startsWith("orders/")) return Response.redirect(order.result_image, 302);
+      const object = await env.UPLOADS.get(order.result_image);
+      if (!object) return json({ error: "Ergebnis nicht verfügbar." }, 404);
+      const headers = new Headers();
+      object.writeHttpMetadata(headers);
+      headers.set("Cache-Control", "private, max-age=3600");
+      return new Response(object.body, { headers });
     }
     if (url.pathname === "/api/doll/retry" && request.method === "POST") {
       let body;
