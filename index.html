@@ -530,7 +530,12 @@ async function showPaidDollOrder(orderId){
         result=data;
         break;
       }
-      if(data.generationStatus==="failed")throw new Error("Die Bildgenerierung ist fehlgeschlagen.");
+      if(data.generationStatus==="failed"){
+        if(data.paymentStatus==="paid"){
+          throw new Error("Deine Zahlung ist bestätigt, aber die Bilderstellung ist fehlgeschlagen. Bitte nicht erneut bezahlen. Deine Bestellnummer ist "+orderId+".");
+        }
+        throw new Error("Die Bildgenerierung ist fehlgeschlagen.");
+      }
       await new Promise(r=>setTimeout(r,2500));
     }
     if(!result)throw new Error("Die Erstellung dauert länger als erwartet. Bitte lade die Seite gleich erneut.");
