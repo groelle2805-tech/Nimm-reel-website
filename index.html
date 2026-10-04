@@ -296,7 +296,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
   </div>
 </div>
 <button class="btn primary doll-generate" id="dollGenerate">Jetzt für 2,99 € erstellen ✦</button>
-      <div class="doll-error" id="dollError"></div>
+      <div class="doll-error" id="dollError"></div><button class="btn primary" id="dollRetry" type="button" style="display:none;margin-top:10px">Erstellung erneut starten – ohne neue Zahlung</button>
       <div class="doll-note">Dein Foto wird zur Erstellung sicher an die KI weitergegeben. Der API-Schlüssel bleibt im Cloudflare-Worker und wird nicht im Browser veröffentlicht.</div>
     </div>
 
@@ -532,6 +532,7 @@ async function showPaidDollOrder(orderId){
       }
       if(data.generationStatus==="failed"){
         if(data.paymentStatus==="paid"){
+          const retry=document.getElementById("dollRetry");retry.dataset.orderId=orderId;retry.style.display="inline-flex";
           throw new Error("Deine Zahlung ist bestätigt, aber die Bilderstellung ist fehlgeschlagen. Bitte nicht erneut bezahlen. Deine Bestellnummer ist "+orderId+".");
         }
         throw new Error("Die Bildgenerierung ist fehlgeschlagen.");
@@ -598,6 +599,16 @@ async function createDoll(){
 }
 document.getElementById("dollGenerate").addEventListener("click",createDoll);
 document.getElementById("dollDownload").addEventListener("click",buildCustomerDollDownload);
+document.getElementById("dollRetry").addEventListener("click",async e=>{
+  const btn=e.currentTarget,orderId=btn.dataset.orderId,err=document.getElementById("dollError");
+  if(!orderId)return;
+  btn.disabled=true;err.textContent="Die bereits bezahlte Bestellung wird erneut gestartet …";err.classList.add("show");
+  try{
+    const r=await fetch("/api/doll/retry",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({orderId})});
+    const d=await r.json();if(!r.ok)throw new Error(d.error||"Erneuter Start fehlgeschlagen.");
+    btn.style.display="none";await showPaidDollOrder(orderId);
+  }catch(x){err.textContent=x.message||"Erneuter Start fehlgeschlagen.";btn.disabled=false}
+});
 
 (function resumeNimmDollAfterCheckout(){
   const params=new URLSearchParams(window.location.search);
