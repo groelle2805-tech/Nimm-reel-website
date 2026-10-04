@@ -502,11 +502,11 @@ async function renderCustomerDollFinal(source,name,isBox){
     const lime="#baff2f";ctx.fillStyle="#080a0d";ctx.fillRect(0,0,W,H);ctx.strokeStyle=lime;ctx.lineWidth=5;ctx.strokeRect(70,55,W-140,H-110);
     ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 68px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,112);
     ctx.fillStyle=lime;ctx.font="900 24px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,158);
-    const x=105,y=205,w=870,h=900,cropTop=Math.round(bmp.height*.035),cropBottom=Math.round(bmp.height*.115),srcH=bmp.height-cropTop-cropBottom;
-    ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.clip();const scale=Math.max(w/bmp.width,h/srcH),dw=bmp.width*scale,dh=srcH*scale;ctx.drawImage(bmp,0,cropTop,bmp.width,srcH,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore();ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(x,y,w,h);
-    ctx.fillStyle="#080a0d";ctx.fillRect(105,1130,870,145);ctx.strokeStyle=lime;ctx.strokeRect(105,1130,870,145);
-    ctx.fillStyle="#fff";let fs=58;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name||"NIMM-DOLL").width>790&&fs>28){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1182);
-    ctx.fillStyle=lime;ctx.font="900 18px Arial,sans-serif";ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,1235);
+    const x=65,y=180,w=950,h=930;
+    ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.clip();ctx.fillStyle="#1a1d20";ctx.fillRect(x,y,w,h);const scale=Math.min(w/bmp.width,h/bmp.height),dw=bmp.width*scale,dh=bmp.height*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;ctx.drawImage(bmp,dx,dy,dw,dh);ctx.restore();ctx.strokeStyle=lime;ctx.lineWidth=4;ctx.strokeRect(x,y,w,h);
+    ctx.fillStyle="#080a0d";ctx.fillRect(65,1135,950,140);ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(65,1135,950,140);
+    ctx.fillStyle="#fff";let fs=58;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name||"NIMM-DOLL").width>790&&fs>28){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1185);
+    ctx.fillStyle=lime;ctx.font="900 18px Arial,sans-serif";ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,1240);
   }else{canvas.width=bmp.width;canvas.height=bmp.height;ctx=canvas.getContext("2d");ctx.drawImage(bmp,0,0)}
   return canvas;
 }
