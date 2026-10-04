@@ -63,7 +63,7 @@ small{color:var(--muted)}
 <label class="check"><input type="checkbox" value="Smartphone">Smartphone</label><label class="check"><input type="checkbox" value="Plant">Pflanze</label>
 </div>
 <button id="go">Kostenlosen Admin-Test erstellen</button><div id="status" class="status"></div>
-<div id="out" class="out"><div class="stage"><img id="result" alt="NIMM-DOLL Testergebnis"><div id="nameplate" class="nameplate"></div><div class="box-sub">PREMIUM PERSONALIZED DOLL</div></div><div id="finalPack" class="final-pack"><div class="pack-window"><img id="finalPackImg" alt="NIMM-DOLL Premium Box"></div><div class="pack-badge">AI<br>POWERED</div><div class="pack-side">PERSONALIZED EDITION</div><div class="pack-footer"><div id="finalPackName" class="pack-name"></div><div class="pack-edition">PERSONALIZED COLLECTOR EDITION</div></div></div><button id="download" type="button">Bild mit Namen herunterladen</button></div>
+<div id="out" class="out"><div class="stage"><img id="result" alt="NIMM-DOLL Testergebnis"><div id="nameplate" class="nameplate"></div><div class="box-sub">PREMIUM PERSONALIZED DOLL</div></div><div id="finalPack" class="final-pack"><div class="pack-window"><img id="finalPackImg" alt="NIMM-DOLL Premium Box"><div id="boxNameMask" class="text-mask-bottom"></div></div><div class="pack-badge">AI<br>POWERED</div><div class="pack-side">PERSONALIZED EDITION</div><div class="pack-footer"><div id="finalPackName" class="pack-name"></div><div class="pack-edition">PERSONALIZED COLLECTOR EDITION</div></div></div><button id="download" type="button">Bild mit Namen herunterladen</button></div>
 </div></main>
 <script>
 const $=id=>document.getElementById(id);
@@ -109,7 +109,7 @@ async function run(){
    const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
    if(!p.ok)throw new Error(q.error||"Statusfehler");
    if(q.generationStatus==="failed")throw new Error(q.error||"Bildgenerierung fehlgeschlagen.");
-   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=(name||$("name").value||"").trim();localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
+   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=(name||$("name").value||"").trim();if($("boxNameMask"))$("boxNameMask").textContent=(name||$("name").value||"").trim();localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
  }catch(e){s.className="status err";s.textContent=e.message||String(e)}
@@ -122,9 +122,15 @@ async function restoreLastTest(){
   if(Array.isArray(saved.accessories)){document.querySelectorAll(".check input").forEach(x=>x.checked=saved.accessories.includes(x.value));}
   let image=saved.image||"";
   if(saved.orderId){try{const r=await fetch("/api/doll?order="+encodeURIComponent(saved.orderId));const q=await r.json();if(r.ok&&q.generationStatus==="succeeded"&&q.image){image=q.image;saved.image=q.image;localStorage.setItem("nimmdollLastTest",JSON.stringify(saved));}}catch{}}
-  if(image){$("result").src=image;if($("finalPackImg"))$("finalPackImg").src=image;if($("finalPackName"))$("finalPackName").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";if($("cleanName"))$("cleanName").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=name||"";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
+  if(image){$("result").src=image;if($("finalPackImg"))$("finalPackImg").src=image;if($("finalPackName"))$("finalPackName").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";if($("boxNameMask"))$("boxNameMask").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";if($("cleanName"))$("cleanName").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=name||"";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
  }catch{}
 }
 $("go").addEventListener("click",run);$("download").addEventListener("click",downloadFinal);restoreLastTest();
 </script></body></html>
 <style>.pack-footer .pack-name{display:block!important;color:#0b1017!important;font-size:clamp(24px,7vw,34px)!important;font-weight:1000!important;line-height:1!important;margin:0 0 4px!important}.pack-footer .pack-edition{font-size:8px!important;margin-top:2px!important}</style>
+
+<style>
+/* final deterministic masks over Runway pseudo-text */
+.pack-window:before{content:"NIMM-DOLL   •   LIMITED EDITION";position:absolute;z-index:20;left:24%;right:20%;top:15.5%;height:9%;display:flex;align-items:center;justify-content:center;background:#0a0d12;border:2px solid #baff2f;color:#fff;font-size:clamp(11px,3vw,17px);font-weight:1000;letter-spacing:.04em;text-align:center;box-sizing:border-box}
+.pack-window .text-mask-bottom{position:absolute;z-index:20;left:25%;right:21%;bottom:18%;height:9%;background:#0a0d12;border:2px solid #baff2f;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:1000;font-size:clamp(15px,4vw,23px);letter-spacing:.04em}
+</style>
