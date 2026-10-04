@@ -294,7 +294,7 @@ export default {
       return json({ error: "Vor der Bildgenerierung ist eine Zahlung erforderlich." }, 402);
     }
     return new Response("NIMM-DOLL API", { status: 200 });
-  },,
+  },
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       const expiredResults = await env.DB.prepare(`SELECT id, result_image FROM orders WHERE generation_status = 'succeeded' AND result_image LIKE 'orders/%/result' AND updated_at < datetime('now','-30 days') LIMIT 100`).all();
