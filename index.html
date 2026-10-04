@@ -539,7 +539,10 @@ async function showPaidDollOrder(orderId){
       }
       await new Promise(r=>setTimeout(r,2500));
     }
-    if(!result)throw new Error("Die Erstellung dauert länger als erwartet. Bitte lade die Seite gleich erneut.");
+    if(!result){
+      const resumeUrl=new URL(window.location.href);resumeUrl.searchParams.set("checkout","success");resumeUrl.searchParams.set("order",orderId);history.replaceState(null,"",resumeUrl.pathname+resumeUrl.search+"#nimm-doll");
+      throw new Error("Die Erstellung dauert länger als erwartet. Deine Zahlung und Bestellnummer sind gespeichert. Lade diese Seite später erneut – du musst nicht noch einmal bezahlen. Bestellnummer: "+orderId);
+    }
     const img=document.getElementById("dollImage");
     img.src=result.image;
     const success=document.getElementById("dollSuccess");
@@ -553,6 +556,8 @@ async function showPaidDollOrder(orderId){
     document.getElementById("dollLoading").classList.remove("show");
     document.getElementById("dollOutput").style.display="block";
     document.getElementById("dollResult").classList.remove("empty");
+    localStorage.removeItem("nimmdoll_order");
+    const cleanUrl=new URL(window.location.href);cleanUrl.searchParams.delete("checkout");cleanUrl.searchParams.delete("order");cleanUrl.searchParams.delete("session_id");history.replaceState(null,"",cleanUrl.pathname+cleanUrl.search+"#nimm-doll");
     document.getElementById("dollGenerate").disabled=false;
     document.getElementById("dollGenerate").style.opacity="1";
     localStorage.removeItem("nimmdoll_order");
