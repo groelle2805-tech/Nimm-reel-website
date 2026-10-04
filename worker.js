@@ -294,5 +294,24 @@ export default {
       return json({ error: "Vor der Bildgenerierung ist eine Zahlung erforderlich." }, 402);
     }
     return new Response("NIMM-DOLL API", { status: 200 });
-  },
+  },,
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil((async () => {
+      const expiredResults = await env.DB.prepare(`SELECT id, result_image FROM orders WHERE generation_status = 'succeeded' AND result_image LIKE 'orders/%/result' AND updated_at < datetime('now','-30 days') LIMIT 100`).all();
+      for (const order of expiredResults.results || []) {
+        if (order.result_image) await env.UPLOADS.delete(order.result_image).catch(() => {});
+        await env.DB.prepare(`UPDATE orders SET result_image = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(order.id).run();
+      }
+      const abandoned = await env.DB.prepare(`SELECT id, image_data FROM orders WHERE payment_status = 'pending' AND created_at < datetime('now','-1 day') LIMIT 100`).all();
+      for (const order of abandoned.results || []) {
+        if (order.image_data) await env.UPLOADS.delete(order.image_data).catch(() => {});
+        await env.DB.prepare(`DELETE FROM orders WHERE id = ? AND payment_status = 'pending'`).bind(order.id).run();
+      }
+      const failed = await env.DB.prepare(`SELECT id, image_data FROM orders WHERE payment_status = 'paid' AND generation_status = 'failed' AND updated_at < datetime('now','-7 days') LIMIT 100`).all();
+      for (const order of failed.results || []) {
+        if (order.image_data) await env.UPLOADS.delete(order.image_data).catch(() => {});
+        await env.DB.prepare(`UPDATE orders SET image_data = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(order.id).run();
+      }
+    })());
+  }
 };
