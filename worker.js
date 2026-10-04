@@ -42,7 +42,7 @@ function promptFor(style, name = "", accessories = []) {
     Summer: "chic summer resort outfit, bright natural light, premium collectible doll photography",
   };
 
-  return `@person as a premium collectible fashion doll. Keep @person's recognizable facial identity, facial proportions, hairstyle, hair color, skin tone and distinctive features consistent with the reference photo. Full-body composition. ${looks[style] || looks.Fashion}.`;
+  return `Create a SINGLE standalone premium collectible fashion doll based on @person. Keep the person's recognizable facial identity, facial proportions, hairstyle, hair color, skin tone, tattoos and distinctive features consistent with the reference photo. Show the COMPLETE doll from the highest point of the hair to the soles of both shoes, with clear empty margin above the head and below the feet. Full-body composition, centered, camera zoomed out enough that nothing is cropped. No retail box, no blister package, no packaging, no frame, no border, no nameplate, no title, no NIMM-DOLL text, no LIMITED EDITION text, no labels, no typography, no accessory compartments and no product-card layout. Output only the standalone doll against a clean premium studio background. ${looks[style] || looks.Fashion}.`;
 }
 
 function parseDataUrl(value) {
