@@ -14,6 +14,9 @@ const STYLE_PROMPTS = {
   "Fußball Edition": "premium collectible football player doll, dynamic professional football styling, stadium-inspired premium photography",
   "Haustier Edition": "premium collectible fashion doll together with a beloved pet, warm elegant portrait styling, premium collector photography",
   "Weihnachtsedition": "premium collectible festive fashion doll, elegant Christmas styling, warm cinematic holiday photography",
+  "Mini-Me Edition": "premium miniature collectible version of the person inside a detailed personalized miniature world",
+  "Couple Edition": "premium paired collectible dolls of a couple, coordinated styling, warm elegant collector portrait",
+  "Anime Edition": "premium original anime-inspired collectible character doll, polished stylized 3D illustration, full-body",
 };
 
 function json(data, status = 200) {
@@ -31,6 +34,18 @@ function json(data, status = 200) {
 function promptFor(style, name = "", accessories = []) {
   const accessoryText = Array.isArray(accessories) && accessories.length ? accessories.slice(0, 9).join(", ") : "keine";
   const safeName = String(name || "").trim().slice(0, 40);
+
+  if (style === "Mini-Me Edition") {
+    return `Create a vertical premium MINI-ME collectible scene based on the reference person. Preserve recognizable facial identity, age impression, skin tone, hairstyle, hair color, tattoos and distinctive features. Transform the person into a clearly miniature high-end 3D collector doll/toy, shown COMPLETE from hair to shoes with nothing cropped. Place the miniature doll inside a richly detailed small-scale diorama that feels like a tiny world built around the person. Use outfit cues and requested accessories to infer a tasteful fitting environment; requested accessories: ${accessoryText}. Keep the doll as the unmistakable focal subject and make the miniature scale visually obvious through realistic tiny props, depth and craftsmanship. Exactly one human doll. No retail blister box, no frame, no nameplate, no NIMM-DOLL text, no logos, labels or fake typography. Premium macro collectible photography, realistic miniature materials, charming but sophisticated.`;
+  }
+
+  if (style === "Couple Edition") {
+    return `Create a vertical premium COUPLE collectible doll portrait based on the reference image. If TWO people are visible, preserve both people's recognizable identities, age impressions, skin tones, hairstyles, hair colors and distinctive features and transform BOTH into coordinated polished high-end 3D collector dolls/toys. Show BOTH complete full-body dolls from hair to shoes, side by side or naturally close together, with nothing cropped. If only ONE person is clearly visible, do NOT invent a specific second person's identity; create an elegant companion doll with generic non-identifying features so the result still reads as a couple set. Include requested shared/lifestyle accessories where appropriate: ${accessoryText}. Exactly two dolls, balanced proportions, coordinated premium styling, warm elegant studio setting. No retail blister box, no frame, no nameplate, no NIMM-DOLL text, no logos, labels or fake typography. Premium romantic collector photography without wedding assumptions unless supported by the reference.`;
+  }
+
+  if (style === "Anime Edition") {
+    return `Create a vertical premium ORIGINAL ANIME-INSPIRED collectible character doll based on the reference person. Preserve recognizable facial identity cues, hairstyle, hair color, skin tone, tattoos and distinctive features while translating them into a polished original anime aesthetic: expressive eyes, refined stylized facial features, clean sculpted hair, elegant proportions and high-end 3D collectible-figure finish. Do NOT imitate any named anime, manga, studio, franchise, artist or copyrighted character. Show ONE complete full-body character from the highest point of the hair to the soles of both shoes, with clear margin above and below and nothing cropped. Create an original fashionable outfit derived from the reference, without protected logos. Include requested accessories where appropriate: ${accessoryText}. No retail blister box, no frame, no nameplate, no NIMM-DOLL text, no labels or fake typography. Cinematic original anime-inspired background, premium collector-figure presentation, vivid but sophisticated.`;
+  }
 
   if (style === "Haustier Edition") {
     return `Create a vertical premium collectible FASHION DOLL based on the reference person, together with ONE charming companion pet. Preserve the person's recognizable facial identity, age impression, skin tone, hairstyle, hair color, tattoos and distinctive features. Transform the person clearly into a polished high-end 3D collector doll/toy, not a photorealistic human. Show the COMPLETE full-body doll from hair to shoes with nothing cropped. The pet must also be completely visible, naturally positioned beside or held by the doll, and rendered in the same premium collectible-toy aesthetic. If the uploaded reference contains a visible pet, preserve its recognizable species, coat color and distinctive markings as closely as possible; otherwise create a tasteful generic companion dog or cat. Include requested pet/lifestyle accessories where applicable: ${accessoryText}. No retail blister box, no frame, no nameplate, no NIMM-DOLL text, no labels or fake typography. Warm elegant premium studio scene, affectionate but not childish, exactly one human doll and one pet.`;
