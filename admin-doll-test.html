@@ -27,6 +27,14 @@ small{color:var(--muted)}
 .out img{width:100%!important;height:auto!important;object-fit:contain!important;border:0!important;border-radius:0!important;background:#0b1018!important}
 .nameplate{left:18%!important;right:18%!important;bottom:4.4%!important;height:6.5%!important;z-index:7!important;background:#080c12!important;border:1px solid #778397!important}
 .box-sub{bottom:1%!important;z-index:7!important}
+
+/* Controlled cover strips hide Runway packaging pseudo-text */
+.clean-top,.clean-bottom{position:absolute;z-index:8;left:0;right:0;pointer-events:none;background:linear-gradient(180deg,#090d14,#111722);display:flex;align-items:center;justify-content:center;text-align:center}
+.clean-top{top:0;height:10%;color:#c7ff3d;font-weight:900;letter-spacing:.07em;font-size:clamp(10px,2.6vw,16px);border-bottom:1px solid #596476}
+.clean-bottom{bottom:0;height:14%;border-top:1px solid #596476}
+.clean-bottom .clean-name{position:absolute;top:12%;left:17%;right:17%;height:46%;display:flex;align-items:center;justify-content:center;border:1px solid #778397;border-radius:7px;background:#070a0f;color:#fff;font-weight:900;font-size:clamp(14px,3.5vw,24px);letter-spacing:.04em}
+.clean-bottom .clean-sub{position:absolute;bottom:8%;left:0;right:0;color:#a8b0bf;font-size:clamp(7px,1.7vw,11px);font-weight:700;letter-spacing:.09em}
+.out .stage:before,.nameplate,.box-sub{display:none!important}
 </style></head><body><main>
 <h1>NIMM-<span>DOLL</span> Admin-Test</h1>
 <p>Interner Test ohne Stripe. Runway-Credits werden weiterhin verbraucht.</p>
@@ -88,7 +96,7 @@ async function run(){
    const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
    if(!p.ok)throw new Error(q.error||"Statusfehler");
    if(q.generationStatus==="failed")throw new Error(q.error||"Bildgenerierung fehlgeschlagen.");
-   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
+   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
  }catch(e){s.className="status err";s.textContent=e.message||String(e)}
@@ -101,7 +109,7 @@ async function restoreLastTest(){
   if(Array.isArray(saved.accessories)){document.querySelectorAll(".check input").forEach(x=>x.checked=saved.accessories.includes(x.value));}
   let image=saved.image||"";
   if(saved.orderId){try{const r=await fetch("/api/doll?order="+encodeURIComponent(saved.orderId));const q=await r.json();if(r.ok&&q.generationStatus==="succeeded"&&q.image){image=q.image;saved.image=q.image;localStorage.setItem("nimmdollLastTest",JSON.stringify(saved));}}catch{}}
-  if(image){$("result").src=image;$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
+  if(image){$("result").src=image;$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";if($("cleanName"))$("cleanName").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
  }catch{}
 }
 $("go").addEventListener("click",run);$("download").addEventListener("click",downloadFinal);restoreLastTest();
