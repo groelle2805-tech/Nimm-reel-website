@@ -53,7 +53,7 @@ small{color:var(--muted)}
 <p>Interner Test ohne Stripe. Runway-Credits werden weiterhin verbraucht.</p>
 <div class="card">
 <label>Admin-Schlüssel</label><input id="key" type="password" autocomplete="off" placeholder="NIMMDOLL_TEST_KEY">
-<small>Der Schlüssel wird nicht gespeichert.</small>
+<small>Der Schlüssel bleibt nur auf diesem Gerät gespeichert.</small>
 <label>Foto</label><input id="photo" type="file" accept="image/jpeg,image/png,image/webp">
 <label>Name</label><input id="name" maxlength="40" placeholder="z. B. ANDRE">
 <label>Style</label><select id="style"><option>Fashion</option><option>Glam</option><option>Y2K</option><option>Luxury</option><option>Business</option><option>Summer</option><option selected>Doll in Box</option></select>
@@ -67,6 +67,8 @@ small{color:var(--muted)}
 </div></main>
 <script>
 const $=id=>document.getElementById(id);
+const savedAdminKey=localStorage.getItem("nimmdollAdminKey")||"";if(savedAdminKey)$("key").value=savedAdminKey;
+$("key").addEventListener("change",()=>{const v=$("key").value.trim();if(v)localStorage.setItem("nimmdollAdminKey",v);else localStorage.removeItem("nimmdollAdminKey")});
 function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 async function downloadFinal(){
  const img=$("result"), name=$("name").value.trim().toUpperCase(), s=$("status");
@@ -96,6 +98,7 @@ async function run(){
  const key=$("key").value, file=$("photo").files[0], name=$("name").value.trim(), style=$("style").value, s=$("status");
  s.className="status"; s.textContent="";
  if(!key){s.className="status err";s.textContent="Admin-Schlüssel fehlt.";return}
+ localStorage.setItem("nimmdollAdminKey",key);
  if(!file){s.className="status err";s.textContent="Bitte Foto auswählen.";return}
  if(style==="Doll in Box"&&!name){s.className="status err";s.textContent="Bitte Namen eingeben.";return}
  $("go").disabled=true;
@@ -104,7 +107,7 @@ async function run(){
   const image=await dataUrl(file);
   const accessories=[...document.querySelectorAll('.check input:checked')].map(x=>x.value);
   const r=await fetch("/api/doll/admin-test",{method:"POST",headers:{"Content-Type":"application/json","X-NIMMDOLL-Test-Key":key},body:JSON.stringify({image,name,style,accessories})});
-  const d=await r.json(); if(!r.ok)throw new Error(d.error||"Test konnte nicht gestartet werden.");
+  const d=await r.json(); if(!r.ok){if(r.status===401){localStorage.removeItem("nimmdollAdminKey");$("key").value="";throw new Error("Admin-Schlüssel ist nicht mehr gültig. Bitte einmal den aktuellen Schlüssel eingeben.");}throw new Error(d.error||"Test konnte nicht gestartet werden.");}
   s.textContent="Runway erstellt deine Doll …";
   for(let i=0;i<60;i++){
    await new Promise(x=>setTimeout(x,2500));
