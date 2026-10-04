@@ -9,7 +9,7 @@ main{max-width:620px;margin:auto;padding:28px 18px 60px}h1{margin:0 0 4px}h1 spa
 label{display:block;font-weight:800;margin:14px 0 7px}input,select{width:100%;padding:13px;border-radius:10px;border:1px solid var(--line);background:#080c12;color:#fff;font:inherit}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}.check{display:flex;gap:8px;align-items:center;border:1px solid var(--line);padding:10px;border-radius:10px;color:#ddd}.check input{width:auto}
 button{width:100%;border:0;border-radius:12px;padding:15px;background:var(--lime);color:#091006;font-weight:900;font-size:16px;cursor:pointer;margin-top:18px}
-button:disabled{opacity:.6}.status{white-space:pre-wrap;margin-top:15px;color:#dce4ef}.err{color:#ff9d9d}.out{display:none;margin-top:18px}.out .stage{position:relative;width:100%}.out img{width:100%;border-radius:14px;display:block}.nameplate{position:absolute;left:30%;right:30%;bottom:11.5%;height:7%;display:flex;align-items:center;justify-content:center;text-align:center;color:#f4f4f4;font-weight:900;font-size:clamp(12px,3.2vw,22px);line-height:1;letter-spacing:.025em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,.75);overflow:hidden;padding:0 5px;box-sizing:border-box;white-space:nowrap}
+button:disabled{opacity:.6}.status{white-space:pre-wrap;margin-top:15px;color:#dce4ef}.err{color:#ff9d9d}.out{display:none;margin-top:18px}.out .stage{position:relative;width:100%;background:linear-gradient(145deg,#222b38,#07090d);border:10px solid #171d27;border-radius:18px;padding:9% 7% 16%;box-shadow:inset 0 0 0 2px #465064}.out .stage:before{content:"NIMM-DOLL  •  COLLECTOR EDITION";position:absolute;left:0;right:0;top:2.5%;text-align:center;font-weight:900;letter-spacing:.08em;font-size:clamp(10px,2.5vw,17px);color:#c7ff3d}.out .stage:after{content:"PREMIUM PERSONALIZED DOLL";position:absolute;left:0;right:0;bottom:2.5%;text-align:center;font-weight:700;letter-spacing:.08em;font-size:clamp(8px,1.9vw,12px);color:#a8b0bf}.out img{width:100%;border-radius:12px;display:block;border:2px solid #5b6574}.nameplate{position:absolute;left:20%;right:20%;bottom:7%;height:7%;display:flex;align-items:center;justify-content:center;text-align:center;background:#111722;border:1px solid #5b6574;border-radius:6px;color:#fff;font-weight:900;font-size:clamp(13px,3.4vw,23px);line-height:1;letter-spacing:.04em;text-transform:uppercase;overflow:hidden;padding:0 5px;box-sizing:border-box;white-space:nowrap}
 small{color:var(--muted)}
 </style></head><body><main>
 <h1>NIMM-<span>DOLL</span> Admin-Test</h1>
@@ -40,10 +40,15 @@ async function downloadFinal(){
   const canvas=document.createElement("canvas"); canvas.width=bmp.width; canvas.height=bmp.height;
   const ctx=canvas.getContext("2d"); ctx.drawImage(bmp,0,0);
   if($("style").value==="Doll in Box"&&name){
-   const x=canvas.width*.30,y=canvas.height*(1-.115-.07),w=canvas.width*.40,h=canvas.height*.07;
-   ctx.save();ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#f4f4f4";ctx.shadowColor="rgba(0,0,0,.75)";ctx.shadowBlur=Math.max(2,canvas.width*.003);ctx.font=`900 ${Math.max(20,Math.floor(canvas.width*.045))}px Arial,sans-serif`;
-   let fs=Math.max(20,Math.floor(canvas.width*.045)); while(ctx.measureText(name).width>w*.9&&fs>14){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}
-   ctx.fillText(name,x+w/2,y+h/2,w*.9);ctx.restore();
+   const pad=Math.round(canvas.width*.06), top=Math.round(canvas.height*.07), bottom=Math.round(canvas.height*.16);
+   const raw=document.createElement("canvas");raw.width=canvas.width;raw.height=canvas.height;raw.getContext("2d").drawImage(canvas,0,0);
+   canvas.width=raw.width+pad*2;canvas.height=raw.height+top+bottom;const out=canvas.getContext("2d");
+   out.fillStyle="#111722";out.fillRect(0,0,canvas.width,canvas.height);out.strokeStyle="#465064";out.lineWidth=Math.max(3,canvas.width*.006);out.strokeRect(out.lineWidth/2,out.lineWidth/2,canvas.width-out.lineWidth,canvas.height-out.lineWidth);
+   out.drawImage(raw,pad,top);
+   out.textAlign="center";out.textBaseline="middle";out.fillStyle="#c7ff3d";out.font=`900 ${Math.max(22,Math.floor(canvas.width*.035))}px Arial,sans-serif`;out.fillText("NIMM-DOLL  •  COLLECTOR EDITION",canvas.width/2,top*.45);
+   const w=canvas.width*.58,h=bottom*.46,x=(canvas.width-w)/2,y=top+raw.height+bottom*.13;out.fillStyle="#080c12";out.fillRect(x,y,w,h);out.strokeStyle="#5b6574";out.lineWidth=2;out.strokeRect(x,y,w,h);
+   out.fillStyle="#fff";let fs=Math.max(22,Math.floor(canvas.width*.045));out.font=`900 ${fs}px Arial,sans-serif`;while(out.measureText(name).width>w*.88&&fs>14){fs-=2;out.font=`900 ${fs}px Arial,sans-serif`;}out.fillText(name,canvas.width/2,y+h/2,w*.9);
+   out.fillStyle="#a8b0bf";out.font=`700 ${Math.max(12,Math.floor(canvas.width*.016))}px Arial,sans-serif`;out.fillText("PREMIUM PERSONALIZED DOLL",canvas.width/2,canvas.height-bottom*.08);
   }
   canvas.toBlob(b=>{if(!b)throw new Error("Bilddatei konnte nicht erstellt werden.");const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`NIMM-DOLL-${name||"Bild"}.jpg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);s.textContent="Fertig – der Name ist fest im Bild gespeichert."},"image/jpeg",.95);
  }catch(e){s.className="status err";s.textContent="Download: "+(e.message||String(e))}
