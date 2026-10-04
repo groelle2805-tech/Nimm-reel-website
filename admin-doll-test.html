@@ -80,11 +80,21 @@ async function run(){
    const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
    if(!p.ok)throw new Error(q.error||"Statusfehler");
    if(q.generationStatus==="failed")throw new Error(q.error||"Bildgenerierung fehlgeschlagen.");
-   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";s.textContent="Fertig.";return}
+   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
  }catch(e){s.className="status err";s.textContent=e.message||String(e)}
  finally{$("go").disabled=false}
 }
-$("go").addEventListener("click",run);$("download").addEventListener("click",downloadFinal);
+async function restoreLastTest(){
+ try{
+  const saved=JSON.parse(localStorage.getItem("nimmdollLastTest")||"null");if(!saved)return;
+  if(saved.name)$("name").value=saved.name;if(saved.style)$("style").value=saved.style;
+  if(Array.isArray(saved.accessories)){document.querySelectorAll(".check input").forEach(x=>x.checked=saved.accessories.includes(x.value));}
+  let image=saved.image||"";
+  if(saved.orderId){try{const r=await fetch("/api/doll?order="+encodeURIComponent(saved.orderId));const q=await r.json();if(r.ok&&q.generationStatus==="succeeded"&&q.image){image=q.image;saved.image=q.image;localStorage.setItem("nimmdollLastTest",JSON.stringify(saved));}}catch{}}
+  if(image){$("result").src=image;$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
+ }catch{}
+}
+$("go").addEventListener("click",run);$("download").addEventListener("click",downloadFinal);restoreLastTest();
 </script></body></html>
