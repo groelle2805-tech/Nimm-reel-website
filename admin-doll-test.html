@@ -71,27 +71,26 @@ const savedAdminKey=localStorage.getItem("nimmdollAdminKey")||"";if(savedAdminKe
 $("key").addEventListener("change",()=>{const v=$("key").value.trim();if(v)localStorage.setItem("nimmdollAdminKey",v);else localStorage.removeItem("nimmdollAdminKey")});
 function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Das Foto konnte auf diesem Gerät nicht gelesen werden."));r.onabort=()=>rej(new Error("Das Einlesen des Fotos wurde abgebrochen."));r.readAsDataURL(file)})}
 async function downloadFinal(){
- const img=$("result"), name=$("name").value.trim().toUpperCase(), s=$("status");
+ const img=$("result"),name=$("name").value.trim().toUpperCase(),s=$("status");
  try{
   s.className="status";s.textContent="Download wird vorbereitet …";
   const r=await fetch(img.src);if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
   const blob=await r.blob(),bmp=await createImageBitmap(blob);
-  const canvas=document.createElement("canvas");canvas.width=bmp.width;canvas.height=bmp.height;
-  const ctx=canvas.getContext("2d");ctx.drawImage(bmp,0,0);
-  if($("style").value==="Doll in Box"&&name){
-   const W=canvas.width,H=canvas.height;
-   const topX=W*.10,topY=H*.04,topW=W*.80,topH=H*.12;
-   ctx.fillStyle="#070a0d";ctx.fillRect(topX,topY,topW,topH);
-   ctx.strokeStyle="#baff2f";ctx.lineWidth=Math.max(3,W*.004);ctx.strokeRect(topX,topY,topW,topH);
-   ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";
-   ctx.font=`900 ${Math.max(24,Math.floor(W*.048))}px Arial,sans-serif`;ctx.fillText("NIMM-DOLL",W/2,topY+topH*.38,topW*.9);
-   ctx.fillStyle="#baff2f";ctx.font=`900 ${Math.max(12,Math.floor(W*.022))}px Arial,sans-serif`;ctx.fillText("LIMITED EDITION",W/2,topY+topH*.73,topW*.9);
-   const botX=W*.10,botY=H*.85,botW=W*.80,botH=H*.11;
-   ctx.fillStyle="#070a0d";ctx.fillRect(botX,botY,botW,botH);ctx.strokeStyle="#baff2f";ctx.strokeRect(botX,botY,botW,botH);
-   ctx.fillStyle="#fff";let fs=Math.max(24,Math.floor(W*.052));ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name).width>botW*.86&&fs>16){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name,W/2,botY+botH*.40,botW*.9);
-   ctx.fillStyle="#baff2f";ctx.font=`900 ${Math.max(10,Math.floor(W*.016))}px Arial,sans-serif`;ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,botY+botH*.76,botW*.9);
-  }
-  canvas.toBlob(b=>{if(!b){s.className="status err";s.textContent="Bilddatei konnte nicht erstellt werden.";return}const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`NIMM-DOLL-${name||"Bild"}.jpg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);s.textContent="Fertig – Vorschau und Download verwenden dasselbe Branding.";},"image/jpeg",.95);
+  const W=1080,H=1350,canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#080a0d";ctx.fillRect(0,0,W,H);
+  const lime="#baff2f",left=70,right=W-70;
+  ctx.strokeStyle=lime;ctx.lineWidth=5;ctx.strokeRect(left,55,right-left,H-110);
+  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 68px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,112);
+  ctx.fillStyle=lime;ctx.font="900 24px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,158);
+  const artX=105,artY=205,artW=870,artH=900;
+  ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,22);ctx.clip();
+  const scale=Math.max(artW/bmp.width,artH/bmp.height),dw=bmp.width*scale,dh=bmp.height*scale;
+  ctx.drawImage(bmp,artX+(artW-dw)/2,artY+(artH-dh)/2,dw,dh);ctx.restore();
+  ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(artX,artY,artW,artH);
+  ctx.fillStyle="#080a0d";ctx.fillRect(105,1130,870,145);ctx.strokeStyle=lime;ctx.strokeRect(105,1130,870,145);
+  ctx.fillStyle="#fff";let fs=58;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name).width>790&&fs>28){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1182);
+  ctx.fillStyle=lime;ctx.font="900 18px Arial,sans-serif";ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,1235);
+  canvas.toBlob(b=>{if(!b)throw new Error("Bilddatei konnte nicht erstellt werden.");const x=document.createElement("a");x.href=URL.createObjectURL(b);x.download=`NIMM-DOLL-${name||"Bild"}.jpg`;x.click();setTimeout(()=>URL.revokeObjectURL(x.href),2000);s.textContent="Fertig – Premium-Download erstellt.";},"image/jpeg",.96);
  }catch(e){s.className="status err";s.textContent="Download: "+(e.message||String(e))}
 }
 async function run(){
