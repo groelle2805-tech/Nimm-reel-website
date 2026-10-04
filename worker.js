@@ -137,10 +137,10 @@ async function startGeneration(env, orderId) {
 }
 
 async function pollOrder(env, orderId) {
-  const order = await env.DB.prepare(`SELECT id, payment_status, generation_status, runway_task_id, result_image, image_data FROM orders WHERE id = ?`).bind(orderId).first();
+  const order = await env.DB.prepare(`SELECT id, payment_status, generation_status, runway_task_id, result_image, image_data, name, style FROM orders WHERE id = ?`).bind(orderId).first();
   if (!order) return json({ error: "Bestellung nicht gefunden." }, 404);
   if (order.generation_status !== "running" || !order.runway_task_id) {
-    return json({ orderId: order.id, paymentStatus: order.payment_status, generationStatus: order.generation_status, image: order.result_image || null });
+    return json({ orderId: order.id, paymentStatus: order.payment_status, generationStatus: order.generation_status, image: order.result_image || null, name: order.name || "", style: order.style || "" });
   }
   const response = await fetch(`${RUNWAY_API}/tasks/${encodeURIComponent(order.runway_task_id)}`, {
     headers: { Authorization: `Bearer ${env.RUNWAYML_API_SECRET}`, "X-Runway-Version": "2024-11-06" },
@@ -151,16 +151,16 @@ async function pollOrder(env, orderId) {
     const image = data.output?.[0] || null;
     await env.DB.prepare(`UPDATE orders SET generation_status = 'succeeded', result_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(image, orderId).run();
     if (order.image_data) await env.UPLOADS.delete(order.image_data).catch(() => {});
-    return json({ orderId, paymentStatus: "paid", generationStatus: "succeeded", image });
+    return json({ orderId, paymentStatus: "paid", generationStatus: "succeeded", image, name: order.name || "", style: order.style || "" });
   }
   if (data.status === "FAILED") {
     const failure = data.failure || data.failureCode || data.error || data.message || "Runway-Bildgenerierung fehlgeschlagen.";
     const failureDetail = typeof failure === "string" ? failure : JSON.stringify(failure);
     console.error("RUNWAY_TASK_FAILED", orderId, JSON.stringify(data));
     await env.DB.prepare(`UPDATE orders SET generation_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(orderId).run();
-    return json({ orderId, paymentStatus: "paid", generationStatus: "failed", error: failureDetail });
+    return json({ orderId, paymentStatus: "paid", generationStatus: "failed", error: failureDetail, name: order.name || "", style: order.style || "" });
   }
-  return json({ orderId, paymentStatus: "paid", generationStatus: "running" });
+  return json({ orderId, paymentStatus: "paid", generationStatus: "running", name: order.name || "", style: order.style || "" });
 }
 
 export default {
