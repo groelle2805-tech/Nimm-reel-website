@@ -30,7 +30,7 @@ function promptFor(style, name = "", accessories = []) {
   const safeName = String(name || "").trim().slice(0, 40);
 
   if (style === "Doll in Box") {
-    return `Create a vertical premium collectible doll retail package using @person. Preserve the recognizable face, age, skin tone, hairstyle and hair color. Make the doll a large complete full-body figure on the LEFT, head to shoes visible. On the RIGHT place exactly these accessories in separate molded clear compartments: ${accessoryText}. The package itself must be a realistic tall black cardboard box with a transparent molded blister front, thin neon-lime trim, subtle studio reflections, premium shelf-ready product photography, photographed straight-on, entire box visible and filling most of the portrait frame. Leave a clean blank black header panel and a clean blank black name panel at the bottom for later website text. Absolutely no words, letters, numbers, logos, labels, barcode or fake typography anywhere. Exactly one person and one face.`;
+    return `Create a vertical premium collectible doll retail package using the reference person. Preserve the recognizable face, age, skin tone, hairstyle and hair color. Make the doll a large complete full-body figure on the LEFT, head to shoes visible. On the RIGHT place exactly these accessories in separate molded clear compartments: ${accessoryText}. The package itself must be a realistic tall black cardboard box with a transparent molded blister front, thin neon-lime trim, subtle studio reflections, premium shelf-ready product photography, photographed straight-on, entire box visible and filling most of the portrait frame. Leave a clean blank black header panel and a clean blank black name panel at the bottom for later website text. Absolutely no words, letters, numbers, logos, labels, barcode or fake typography anywhere. Exactly one person and one face.`;
   }
 
   const looks = {
@@ -129,7 +129,7 @@ async function startGeneration(env, orderId) {
       model: "seedream5_lite",
       ratio: "2048:3072",
       promptText: promptFor(order.style, order.name, accessories),
-      referenceImages: [{ uri: runwayUri, tag: "person" }],
+      referenceImages: [{ uri: runwayUri }],
     };
     const response = await fetch(`${RUNWAY_API}/text_to_image`, {
       method: "POST",
