@@ -69,7 +69,7 @@ small{color:var(--muted)}
 const $=id=>document.getElementById(id);
 const savedAdminKey=localStorage.getItem("nimmdollAdminKey")||"";if(savedAdminKey)$("key").value=savedAdminKey;
 $("key").addEventListener("change",()=>{const v=$("key").value.trim();if(v)localStorage.setItem("nimmdollAdminKey",v);else localStorage.removeItem("nimmdollAdminKey")});
-function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Das Foto konnte auf diesem Gerät nicht gelesen werden."));r.onabort=()=>rej(new Error("Das Einlesen des Fotos wurde abgebrochen."));r.readAsDataURL(file)})}
 async function downloadFinal(){
  const img=$("result"), name=$("name").value.trim().toUpperCase(), s=$("status");
  try{
@@ -117,7 +117,7 @@ async function run(){
    if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=(name||$("name").value||"").trim();if($("boxNameMask"))$("boxNameMask").textContent=(name||$("name").value||"").trim();localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
- }catch(e){s.className="status err";s.textContent=e.message||String(e)}
+ }catch(e){s.className="status err";s.textContent=(e&&e.message)?e.message:"Technischer Fehler beim Foto-Upload. Bitte Foto erneut auswählen.";console.error("NIMMDOLL_ADMIN_TEST_ERROR",e)}
  finally{$("go").disabled=false}
 }
 async function restoreLastTest(){
