@@ -30,7 +30,7 @@ function promptFor(style, name = "", accessories = []) {
   const safeName = String(name || "").trim().slice(0, 40);
 
   if (style === "Doll in Box") {
-    return `Create a premium collectible fashion doll display using @person. Preserve the recognizable face, age, skin tone, hairstyle and hair color. Show one complete full-body doll on the left, head to shoes visible. Place these accessories on the right in separate clear molded compartments: ${accessoryText}. Front-facing studio product photo, realistic clear blister reflections, generous margins. Plain dark background with no branding. Exactly one person and one face. Do not add any words, letters, numbers, logos, labels or barcode.`;
+    return `Using @person, create ONLY the contents for a collectible doll package, not the package itself. Preserve the recognizable face, age, skin tone, hairstyle and hair color. One complete full-body fashion doll standing on the LEFT, head and shoes fully visible. On the RIGHT, show exactly these separate accessories: ${accessoryText}. Each accessory isolated and fully visible. Simple uniform dark charcoal studio background. No box, no blister shell, no retail packaging, no border, no frame, no title area, no footer. No words, letters, numbers, logos, labels or barcode. Exactly one person and one face. Keep generous empty margin around every object.`;
   }
 
   const looks = {
