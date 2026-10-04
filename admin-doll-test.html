@@ -165,3 +165,11 @@ $("go").addEventListener("click",run);$("download").addEventListener("click",dow
 .pack-window .text-mask-bottom:after{content:"PERSONALIZED COLLECTOR EDITION";position:absolute;left:0;right:0;bottom:4px;color:#baff2f;font-size:7px;letter-spacing:.14em;font-weight:900}
 .pack-window img{transform:none!important;margin:0!important;width:100%!important;height:auto!important}
 </style>
+
+<style>
+/* Single clean preview: do not place HTML labels over AI artwork. */
+.pack-window:before,.pack-window .text-mask-bottom,.pack-window .text-mask-bottom:after,.pack-window:after{display:none!important;content:none!important}
+#nameplate,#cleanName,#finalPackName,#boxNameMask{display:none!important}
+.pack-window{border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important}
+.pack-window img,#finalPackImg,#result{width:100%!important;height:auto!important;object-fit:contain!important;transform:none!important}
+</style>
