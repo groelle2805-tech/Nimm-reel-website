@@ -109,14 +109,20 @@ async function startGeneration(env, orderId) {
     if (!object) throw new Error("Kundenfoto nicht gefunden.");
     const imageBuffer = await object.arrayBuffer();
     const mime = object.customMetadata?.mime || "image/jpeg";
-    const uploadResponse = await fetch(`${RUNWAY_API}/uploads`, {
+    const ext = mime.includes("png") ? "png" : mime.includes("webp") ? "webp" : "jpg";
+    const initUploadResponse = await fetch(`${RUNWAY_API}/uploads`, {
       method: "POST",
-      headers: { "Content-Type": mime, Authorization: `Bearer ${env.RUNWAYML_API_SECRET}`, "X-Runway-Version": "2024-11-06" },
-      body: imageBuffer,
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${env.RUNWAYML_API_SECRET}`, "X-Runway-Version": "2024-11-06" },
+      body: JSON.stringify({ filename: `reference.${ext}`, type: "ephemeral" }),
     });
-    const uploadData = await uploadResponse.json();
-    const runwayUri = uploadData.runwayUri || uploadData.uri || uploadData.url;
-    if (!uploadResponse.ok || !runwayUri) throw new Error(`Runway upload ${uploadResponse.status}: ${JSON.stringify(uploadData)}`);
+    const uploadData = await initUploadResponse.json();
+    if (!initUploadResponse.ok || !uploadData.uploadUrl || !uploadData.runwayUri) throw new Error(`Runway upload init ${initUploadResponse.status}: ${JSON.stringify(uploadData)}`);
+    const form = new FormData();
+    for (const [key, value] of Object.entries(uploadData.fields || {})) form.append(key, String(value));
+    form.append("file", new Blob([imageBuffer], { type: mime }), `reference.${ext}`);
+    const fileUploadResponse = await fetch(uploadData.uploadUrl, { method: "POST", body: form });
+    if (!fileUploadResponse.ok) throw new Error(`Runway file upload ${fileUploadResponse.status}: ${await fileUploadResponse.text()}`);
+    const runwayUri = uploadData.runwayUri;
     let accessories = [];
     try { accessories = order.accessories ? JSON.parse(order.accessories) : []; } catch { accessories = []; }
     const payload = {
