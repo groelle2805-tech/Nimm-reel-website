@@ -14,3 +14,6 @@ database_id = "115d7bab-e68e-41ec-8a39-95158fc2642d"
 [[r2_buckets]]
 binding = "UPLOADS"
 bucket_name = "nimmdoll-uploads"
+
+[triggers]
+crons = ["17 3 * * *"]
