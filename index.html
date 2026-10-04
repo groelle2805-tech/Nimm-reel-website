@@ -277,6 +277,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
           <button type="button" class="doll-style" data-style="Business">Business</button>
           <button type="button" class="doll-style" data-style="Summer">Summer</button>
           <button type="button" class="doll-style" data-style="Doll in Box">Doll in Box</button>
+          <button type="button" class="doll-style" data-style="Fußball Edition">⚽ Fußball Edition</button>
         </div>
       </div>
 
@@ -293,6 +294,10 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
     <label class="doll-accessory"><input type="checkbox" value="Sonnenbrille"><span>🕶️ Sonnenbrille</span><span class="acc-check">✓</span></label>
     <label class="doll-accessory"><input type="checkbox" value="Pflanze"><span>🌱 Pflanze</span><span class="acc-check">✓</span></label>
     <label class="doll-accessory"><input type="checkbox" value="Hund"><span>🐕 Hund</span><span class="acc-check">✓</span></label>
+    <label class="doll-accessory football-acc"><input type="checkbox" value="Fußball"><span>⚽ Fußball</span><span class="acc-check">✓</span></label>
+    <label class="doll-accessory football-acc"><input type="checkbox" value="Fußballschuhe"><span>👟 Fußballschuhe</span><span class="acc-check">✓</span></label>
+    <label class="doll-accessory football-acc"><input type="checkbox" value="Pokal"><span>🏆 Pokal</span><span class="acc-check">✓</span></label>
+    <label class="doll-accessory football-acc"><input type="checkbox" value="Schal ohne Vereinslogo"><span>🧣 Fanschal</span><span class="acc-check">✓</span></label>
   </div>
 </div>
 <div id="dollPurchaseInfo" style="margin:14px 0 10px;padding:14px;border:1px solid rgba(199,255,61,.28);border-radius:12px;background:rgba(199,255,61,.05);font-size:12px;line-height:1.55;color:#b8c0ce"><strong style="color:#fff">Digitale Einzelleistung · einmalige Zahlung</strong><br><span id="dollPurchaseText">NIMM-DOLL: 2,99 € einmalig. Du erhältst ein individuell KI-generiertes Bild zum Herunterladen. Es wird kein physisches Produkt versendet.</span></div><label style="display:flex;gap:9px;align-items:flex-start;margin:10px 0 12px;font-size:12px;line-height:1.45;color:#b8c0ce"><input id="dollImmediateConsent" type="checkbox" style="margin-top:2px"><span>Ich stimme ausdrücklich zu, dass mit der Erstellung meiner digitalen NIMM-DOLL direkt nach der Zahlung begonnen wird. Mir ist bekannt, dass mein Widerrufsrecht bei vollständiger Vertragserfüllung erlischt.</span></label><button class="btn primary doll-generate" id="dollGenerate">Weiter zur Zahlung – 2,99 €</button>
@@ -410,9 +415,9 @@ document.querySelectorAll(".doll-style").forEach(b=>{
     document.querySelectorAll(".doll-style").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");
     dollState.style=b.dataset.style;
-    const isBox=dollState.style==="Doll in Box";
+    const isBox=dollState.style==="Doll in Box",isFootball=dollState.style==="Fußball Edition";
     const payBtn=document.getElementById("dollGenerate"),nameInput=document.getElementById("dollName"),nameHint=document.getElementById("dollNameHint");
-    if(payBtn) payBtn.textContent=isBox?"Weiter zur Zahlung – 4,99 €":"Weiter zur Zahlung – 2,99 €"; const purchaseText=document.getElementById("dollPurchaseText"); if(purchaseText) purchaseText.textContent=isBox?"NIMM-DOLL in Box: 4,99 € einmalig. Du erhältst ein personalisiertes KI-generiertes Sammlerbild mit deinem Namen zum Herunterladen. Es wird kein physisches Produkt, keine echte Puppe und keine Verpackung versendet.":"NIMM-DOLL: 2,99 € einmalig. Du erhältst ein individuell KI-generiertes Bild zum Herunterladen. Es wird kein physisches Produkt versendet.";
+    if(payBtn) payBtn.textContent=isBox?"Weiter zur Zahlung – 4,99 €":"Weiter zur Zahlung – 2,99 €"; const purchaseText=document.getElementById("dollPurchaseText"); if(purchaseText) purchaseText.textContent=isBox?"NIMM-DOLL in Box: 4,99 € einmalig. Du erhältst ein personalisiertes KI-generiertes Sammlerbild mit deinem Namen zum Herunterladen. Es wird kein physisches Produkt, keine echte Puppe und keine Verpackung versendet.":isFootball?"NIMM-DOLL Fußball Edition: 2,99 € einmalig. Du erhältst eine personalisierte Fußball-Doll als digitales Bild zum Herunterladen. Vereinslogos und Sponsorenmarken werden nicht automatisch verwendet.":"NIMM-DOLL: 2,99 € einmalig. Du erhältst ein individuell KI-generiertes Bild zum Herunterladen. Es wird kein physisches Produkt versendet.";
     if(nameInput){nameInput.required=isBox;nameInput.placeholder=isBox?"Pflichtfeld, z. B. Sophie":"z. B. Sophie";}
     if(nameHint) nameHint.textContent=isBox?"(Pflichtfeld für Doll in Box)":"(optional)";
   });
