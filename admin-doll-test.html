@@ -68,26 +68,28 @@ small{color:var(--muted)}
 <script>
 const $=id=>document.getElementById(id);
 function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
-async function downloadFinal(){
+async async function downloadFinal(){
  const img=$("result"), name=$("name").value.trim().toUpperCase(), s=$("status");
  try{
   s.className="status";s.textContent="Download wird vorbereitet …";
-  const r=await fetch(img.src); if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
-  const blob=await r.blob(), bmp=await createImageBitmap(blob);
-  const canvas=document.createElement("canvas"); canvas.width=bmp.width; canvas.height=bmp.height;
-  const ctx=canvas.getContext("2d"); ctx.drawImage(bmp,0,0);
+  const r=await fetch(img.src);if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
+  const blob=await r.blob(),bmp=await createImageBitmap(blob);
+  const canvas=document.createElement("canvas");canvas.width=bmp.width;canvas.height=bmp.height;
+  const ctx=canvas.getContext("2d");ctx.drawImage(bmp,0,0);
   if($("style").value==="Doll in Box"&&name){
-   const pad=Math.round(canvas.width*.06), top=Math.round(canvas.height*.07), bottom=Math.round(canvas.height*.16);
-   const raw=document.createElement("canvas");raw.width=canvas.width;raw.height=canvas.height;raw.getContext("2d").drawImage(canvas,0,0);
-   canvas.width=raw.width+pad*2;canvas.height=raw.height+top+bottom;const out=canvas.getContext("2d");
-   out.fillStyle="#111722";out.fillRect(0,0,canvas.width,canvas.height);out.strokeStyle="#465064";out.lineWidth=Math.max(3,canvas.width*.006);out.strokeRect(out.lineWidth/2,out.lineWidth/2,canvas.width-out.lineWidth,canvas.height-out.lineWidth);
-   out.drawImage(raw,pad,top);
-   out.textAlign="center";out.textBaseline="middle";out.fillStyle="#c7ff3d";out.font=`900 ${Math.max(22,Math.floor(canvas.width*.035))}px Arial,sans-serif`;out.fillText("NIMM-DOLL  •  COLLECTOR EDITION",canvas.width/2,top*.45);
-   const w=canvas.width*.58,h=bottom*.46,x=(canvas.width-w)/2,y=top+raw.height+bottom*.13;out.fillStyle="#080c12";out.fillRect(x,y,w,h);out.strokeStyle="#5b6574";out.lineWidth=2;out.strokeRect(x,y,w,h);
-   out.fillStyle="#fff";let fs=Math.max(22,Math.floor(canvas.width*.045));out.font=`900 ${fs}px Arial,sans-serif`;while(out.measureText(name).width>w*.88&&fs>14){fs-=2;out.font=`900 ${fs}px Arial,sans-serif`;}out.fillText(name,canvas.width/2,y+h/2,w*.9);
-   out.fillStyle="#a8b0bf";out.font=`700 ${Math.max(12,Math.floor(canvas.width*.016))}px Arial,sans-serif`;out.fillText("PREMIUM PERSONALIZED DOLL",canvas.width/2,canvas.height-bottom*.08);
+   const W=canvas.width,H=canvas.height;
+   const topX=W*.10,topY=H*.04,topW=W*.80,topH=H*.12;
+   ctx.fillStyle="#070a0d";ctx.fillRect(topX,topY,topW,topH);
+   ctx.strokeStyle="#baff2f";ctx.lineWidth=Math.max(3,W*.004);ctx.strokeRect(topX,topY,topW,topH);
+   ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";
+   ctx.font=`900 ${Math.max(24,Math.floor(W*.048))}px Arial,sans-serif`;ctx.fillText("NIMM-DOLL",W/2,topY+topH*.38,topW*.9);
+   ctx.fillStyle="#baff2f";ctx.font=`900 ${Math.max(12,Math.floor(W*.022))}px Arial,sans-serif`;ctx.fillText("LIMITED EDITION",W/2,topY+topH*.73,topW*.9);
+   const botX=W*.10,botY=H*.85,botW=W*.80,botH=H*.11;
+   ctx.fillStyle="#070a0d";ctx.fillRect(botX,botY,botW,botH);ctx.strokeStyle="#baff2f";ctx.strokeRect(botX,botY,botW,botH);
+   ctx.fillStyle="#fff";let fs=Math.max(24,Math.floor(W*.052));ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name).width>botW*.86&&fs>16){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name,W/2,botY+botH*.40,botW*.9);
+   ctx.fillStyle="#baff2f";ctx.font=`900 ${Math.max(10,Math.floor(W*.016))}px Arial,sans-serif`;ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,botY+botH*.76,botW*.9);
   }
-  canvas.toBlob(b=>{if(!b)throw new Error("Bilddatei konnte nicht erstellt werden.");const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`NIMM-DOLL-${name||"Bild"}.jpg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);s.textContent="Fertig – der Name ist fest im Bild gespeichert."},"image/jpeg",.95);
+  canvas.toBlob(b=>{if(!b){s.className="status err";s.textContent="Bilddatei konnte nicht erstellt werden.";return}const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`NIMM-DOLL-${name||"Bild"}.jpg`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);s.textContent="Fertig – Vorschau und Download verwenden dasselbe Branding.";},"image/jpeg",.95);
  }catch(e){s.className="status err";s.textContent="Download: "+(e.message||String(e))}
 }
 async function run(){
