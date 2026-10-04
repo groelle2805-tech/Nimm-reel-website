@@ -131,7 +131,7 @@ async function startGeneration(env, orderId) {
     }
     await env.DB.prepare(`UPDATE orders SET runway_task_id = ?, generation_status = 'running', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(data.id, orderId).run();
   } catch (error) {
-    await env.DB.prepare(`UPDATE orders SET generation_status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind(orderId).run();
+    await env.DB.prepare(`UPDATE orders SET generation_status = 'failed', result_image = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`).bind("ERROR:" + String(error?.message || error).slice(0,900), orderId).run();
     console.error("GENERATION_ERROR", orderId, error);
   }
 }
@@ -140,7 +140,7 @@ async function pollOrder(env, orderId) {
   const order = await env.DB.prepare(`SELECT id, payment_status, generation_status, runway_task_id, result_image, image_data, name, style FROM orders WHERE id = ?`).bind(orderId).first();
   if (!order) return json({ error: "Bestellung nicht gefunden." }, 404);
   if (order.payment_status === "paid" && order.generation_status === "failed") {
-    return json({ orderId: order.id, paymentStatus: "paid", generationStatus: "failed", recoverable: true, image: null, name: order.name || "", style: order.style || "" });
+    return json({ orderId: order.id, paymentStatus: "paid", generationStatus: "failed", recoverable: !!order.image_data, image: null, error: order.result_image?.startsWith("ERROR:") ? order.result_image.slice(6) : "Bildgenerierung fehlgeschlagen.", name: order.name || "", style: order.style || "" });
   }
   if (order.generation_status !== "running" || !order.runway_task_id) {
     return json({ orderId: order.id, paymentStatus: order.payment_status, generationStatus: order.generation_status, image: order.result_image ? (order.result_image.startsWith("orders/") ? `/api/doll/result?order=${encodeURIComponent(order.id)}` : order.result_image) : null, name: order.name || "", style: order.style || "" });
