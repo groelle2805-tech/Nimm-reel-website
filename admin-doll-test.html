@@ -70,29 +70,29 @@ const $=id=>document.getElementById(id);
 const savedAdminKey=localStorage.getItem("nimmdollAdminKey")||"";if(savedAdminKey)$("key").value=savedAdminKey;
 $("key").addEventListener("change",()=>{const v=$("key").value.trim();if(v)localStorage.setItem("nimmdollAdminKey",v);else localStorage.removeItem("nimmdollAdminKey")});
 function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error("Das Foto konnte auf diesem Gerät nicht gelesen werden."));r.onabort=()=>rej(new Error("Das Einlesen des Fotos wurde abgebrochen."));r.readAsDataURL(file)})}
+async function renderAdminFinal(source,name){
+ const r=await fetch(source);if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
+ const blob=await r.blob(),bmp=await createImageBitmap(blob),W=1080,H=1350,canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d"),lime="#baff2f";
+ ctx.fillStyle="#080a0d";ctx.fillRect(0,0,W,H);ctx.strokeStyle=lime;ctx.lineWidth=5;ctx.strokeRect(70,55,W-140,H-110);
+ ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 68px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,112);ctx.fillStyle=lime;ctx.font="900 24px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,158);
+ const artX=78,artY=185,artW=924,artH=930,cropTop=Math.round(bmp.height*.02),cropBottom=Math.round(bmp.height*.08);
+ const srcH=bmp.height-cropTop-cropBottom;
+ // Zoom substantially into Runway's central retail package instead of displaying its surrounding studio canvas.
+ const zoom=2.12,scale=Math.max(artW/bmp.width,artH/srcH)*zoom,dw=bmp.width*scale,dh=srcH*scale;
+ ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,22);ctx.clip();ctx.drawImage(bmp,0,cropTop,bmp.width,srcH,artX+(artW-dw)/2,artY+(artH-dh)/2,dw,dh);ctx.restore();
+ ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(artX,artY,artW,artH);
+ ctx.fillStyle="#080a0d";ctx.fillRect(105,1130,870,145);ctx.strokeStyle=lime;ctx.strokeRect(105,1130,870,145);
+ ctx.fillStyle="#fff";let fs=58;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name||"NIMM-DOLL").width>790&&fs>28){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1182);
+ ctx.fillStyle=lime;ctx.font="900 18px Arial,sans-serif";ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,1235);return canvas;
+}
+async function showAdminFinal(source,name){
+ const canvas=await renderAdminFinal(source,name.trim().toUpperCase()),img=$("finalPackImg");img.src=canvas.toDataURL("image/jpeg",.92);img.style.transform="none";img.style.margin="0";img.style.width="100%";img.style.height="auto";img.style.objectFit="contain";
+}
 async function downloadFinal(){
  const img=$("result"),name=$("name").value.trim().toUpperCase(),s=$("status");
  try{
   s.className="status";s.textContent="Download wird vorbereitet …";
-  const r=await fetch(img.src);if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
-  const blob=await r.blob(),bmp=await createImageBitmap(blob);
-  const W=1080,H=1350,canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d");
-  ctx.fillStyle="#080a0d";ctx.fillRect(0,0,W,H);
-  const lime="#baff2f",left=70,right=W-70;
-  ctx.strokeStyle=lime;ctx.lineWidth=5;ctx.strokeRect(left,55,right-left,H-110);
-  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 68px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,112);
-  ctx.fillStyle=lime;ctx.font="900 24px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,158);
-  const artX=105,artY=205,artW=870,artH=900;
-  ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,22);ctx.clip();
-  /* Crop the AI artwork slightly tighter at the bottom so Runway pseudo-text is outside the final product. */
-  const cropTop=Math.round(bmp.height*.035),cropBottom=Math.round(bmp.height*.115);
-  const srcH=bmp.height-cropTop-cropBottom;
-  const scale=Math.max(artW/bmp.width,artH/srcH),dw=bmp.width*scale,dh=srcH*scale;
-  ctx.drawImage(bmp,0,cropTop,bmp.width,srcH,artX+(artW-dw)/2,artY+(artH-dh)/2,dw,dh);ctx.restore();
-  ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(artX,artY,artW,artH);
-  ctx.fillStyle="#080a0d";ctx.fillRect(105,1130,870,145);ctx.strokeStyle=lime;ctx.strokeRect(105,1130,870,145);
-  ctx.fillStyle="#fff";let fs=58;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name).width>790&&fs>28){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1182);
-  ctx.fillStyle=lime;ctx.font="900 18px Arial,sans-serif";ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,1235);
+  const source=img.dataset.source||img.src,canvas=await renderAdminFinal(source,name);
   canvas.toBlob(b=>{if(!b)throw new Error("Bilddatei konnte nicht erstellt werden.");const x=document.createElement("a");x.href=URL.createObjectURL(b);x.download=`NIMM-DOLL-${name||"Bild"}.jpg`;x.click();setTimeout(()=>URL.revokeObjectURL(x.href),2000);s.textContent="Fertig – Premium-Download erstellt.";},"image/jpeg",.96);
  }catch(e){s.className="status err";s.textContent="Download: "+(e.message||String(e))}
 }
@@ -116,7 +116,7 @@ async function run(){
    const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
    if(!p.ok)throw new Error(q.error||"Statusfehler");
    if(q.generationStatus==="failed")throw new Error(q.error||"Bildgenerierung fehlgeschlagen.");
-   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=(name||$("name").value||"").trim();if($("boxNameMask"))$("boxNameMask").textContent=(name||$("name").value||"").trim();localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
+   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("result").dataset.source=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";if($("finalPackImg"))await showAdminFinal(q.image,name);if($("finalPackName"))$("finalPackName").textContent=(name||$("name").value||"").trim();if($("boxNameMask"))$("boxNameMask").textContent=(name||$("name").value||"").trim();localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
  }catch(e){s.className="status err";s.textContent=(e&&e.message)?e.message:"Technischer Fehler beim Foto-Upload. Bitte Foto erneut auswählen.";console.error("NIMMDOLL_ADMIN_TEST_ERROR",e)}
@@ -129,7 +129,7 @@ async function restoreLastTest(){
   if(Array.isArray(saved.accessories)){document.querySelectorAll(".check input").forEach(x=>x.checked=saved.accessories.includes(x.value));}
   let image=saved.image||"";
   if(saved.orderId){try{const r=await fetch("/api/doll?order="+encodeURIComponent(saved.orderId));const q=await r.json();if(r.ok&&q.generationStatus==="succeeded"&&q.image){image=q.image;saved.image=q.image;localStorage.setItem("nimmdollLastTest",JSON.stringify(saved));}}catch{}}
-  if(image){$("result").src=image;if($("finalPackImg"))$("finalPackImg").src=image;if($("finalPackName"))$("finalPackName").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";if($("boxNameMask"))$("boxNameMask").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";if($("cleanName"))$("cleanName").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=saved.name||"";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
+  if(image){$("result").src=image;$("result").dataset.source=image;if($("finalPackImg"))await showAdminFinal(image,saved.name||$("name").value||"STEFFI");if($("finalPackName"))$("finalPackName").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";if($("boxNameMask"))$("boxNameMask").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";if($("cleanName"))$("cleanName").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";if($("finalPackName"))$("finalPackName").textContent=saved.name||"";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
  }catch{}
 }
 $("go").addEventListener("click",run);$("download").addEventListener("click",downloadFinal);restoreLastTest();
