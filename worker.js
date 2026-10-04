@@ -30,7 +30,7 @@ function promptFor(style, name = "", accessories = []) {
   const safeName = String(name || "").trim().slice(0, 40);
 
   if (style === "Doll in Box") {
-    return `@person as a full-body collectible doll in a tall plain dark display box with clear molded blister. Match @person's face closely: same facial proportions, eye shape and spacing, nose, mouth, jawline, age, skin tone, hairstyle, hair color and visible distinctive features. Do not beautify, idealize or change identity. Keep recognizable natural likeness. Black fitted top. Center doll. Accessories in separate molded compartments: ${accessoryText}. Realistic premium product photo. Packaging is completely unprinted solid dark material: no text, letters, numbers, symbols, logos, labels, diagrams, marks or writing anywhere. No writing on accessories. Leave a wide blank dark nameplate at lower front.`;
+    return `@person as one single full-body collectible fashion doll. Preserve @person's recognizable facial identity, proportions, eye shape, nose, mouth, jawline, age, skin tone, hairstyle, hair color and distinctive visible features. Do not beautify or idealize. Show exactly one person and one face only, centered, front-facing, on a simple neutral studio background. No box, packaging, blister, poster, portrait, printed face, text, letters, numbers, logos, labels or writing. Arrange these accessories beside the doll as separate clean objects: ${accessoryText}. Premium realistic product photography.`;
   }
 
   const looks = {
