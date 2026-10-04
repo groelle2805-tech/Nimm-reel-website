@@ -242,6 +242,23 @@ export default {
         return json({ error: error?.message || "Checkout konnte nicht erstellt werden." }, 500);
       }
     }
+    if (url.pathname === "/api/doll/retry" && request.method === "POST") {
+      let body;
+      try { body = await request.json(); } catch { return json({ error: "Ungültige Anfrage." }, 400); }
+      const orderId = typeof body.orderId === "string" ? body.orderId.trim() : "";
+      if (!orderId) return json({ error: "Bestellnummer fehlt." }, 400);
+      const order = await env.DB.prepare(`SELECT id, payment_status, generation_status, image_data FROM orders WHERE id = ?`).bind(orderId).first();
+      if (!order) return json({ error: "Bestellung nicht gefunden." }, 404);
+      if (order.payment_status !== "paid") return json({ error: "Bestellung ist nicht bezahlt." }, 403);
+      if (order.generation_status !== "failed") return json({ error: "Diese Bestellung kann nicht erneut gestartet werden." }, 409);
+      if (!order.image_data) return json({ error: "Das ursprüngliche Kundenfoto ist nicht mehr verfügbar." }, 410);
+      const object = await env.UPLOADS.get(order.image_data);
+      if (!object) return json({ error: "Das ursprüngliche Kundenfoto ist nicht mehr verfügbar." }, 410);
+      const reset = await env.DB.prepare(`UPDATE orders SET generation_status = 'waiting', runway_task_id = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND payment_status = 'paid' AND generation_status = 'failed'`).bind(orderId).run();
+      if (!reset.meta?.changes) return json({ error: "Bestellung konnte nicht zurückgesetzt werden." }, 409);
+      ctx.waitUntil(startGeneration(env, orderId));
+      return json({ orderId, paymentStatus: "paid", generationStatus: "waiting", retried: true });
+    }
     if (url.pathname === "/api/doll" && request.method === "GET") {
       const orderId = url.searchParams.get("order");
       if (!orderId) return json({ error: "order fehlt." }, 400);
