@@ -68,7 +68,7 @@ small{color:var(--muted)}
 <script>
 const $=id=>document.getElementById(id);
 function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
-async async function downloadFinal(){
+async function downloadFinal(){
  const img=$("result"), name=$("name").value.trim().toUpperCase(), s=$("status");
  try{
   s.className="status";s.textContent="Download wird vorbereitet …";
@@ -124,7 +124,7 @@ async function restoreLastTest(){
   if(Array.isArray(saved.accessories)){document.querySelectorAll(".check input").forEach(x=>x.checked=saved.accessories.includes(x.value));}
   let image=saved.image||"";
   if(saved.orderId){try{const r=await fetch("/api/doll?order="+encodeURIComponent(saved.orderId));const q=await r.json();if(r.ok&&q.generationStatus==="succeeded"&&q.image){image=q.image;saved.image=q.image;localStorage.setItem("nimmdollLastTest",JSON.stringify(saved));}}catch{}}
-  if(image){$("result").src=image;if($("finalPackImg"))$("finalPackImg").src=image;if($("finalPackName"))$("finalPackName").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";if($("boxNameMask"))$("boxNameMask").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";if($("cleanName"))$("cleanName").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=name||"";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
+  if(image){$("result").src=image;if($("finalPackImg"))$("finalPackImg").src=image;if($("finalPackName"))$("finalPackName").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";if($("boxNameMask"))$("boxNameMask").textContent=(saved.name||$("name").value||"STEFFI").trim()||"STEFFI";$("nameplate").textContent=saved.style==="Doll in Box"?(saved.name||""):"";if($("cleanName"))$("cleanName").textContent=saved.style==="Doll in Box"?(saved.name||""):"";$("out").style.display="block";if($("finalPackImg"))$("finalPackImg").src=$("result").src;if($("finalPackName"))$("finalPackName").textContent=saved.name||"";$("status").textContent="Letztes Testergebnis wiederhergestellt – kein neuer Runway-Credit verbraucht.";}
  }catch{}
 }
 $("go").addEventListener("click",run);$("download").addEventListener("click",downloadFinal);restoreLastTest();
