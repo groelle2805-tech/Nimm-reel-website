@@ -73,21 +73,20 @@ function dataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r
 async function renderAdminFinal(source,name){
  const r=await fetch(source);if(!r.ok)throw new Error("Bild konnte nicht geladen werden.");
  const blob=await r.blob(),bmp=await createImageBitmap(blob),W=1080,H=1350,canvas=document.createElement("canvas");canvas.width=W;canvas.height=H;const ctx=canvas.getContext("2d"),lime="#baff2f";
- ctx.fillStyle="#080a0d";ctx.fillRect(0,0,W,H);
- ctx.strokeStyle=lime;ctx.lineWidth=6;ctx.roundRect(55,45,W-110,H-90,28);ctx.stroke();
- ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 66px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,105);
- ctx.fillStyle=lime;ctx.font="900 22px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,150);
- const artX=75,artY=180,artW=930,artH=1010;
- // Source is 16:9. Crop only empty vertical studio bands, preserve the full width so doll and every accessory stay visible.
- const sx=0,sy=Math.round(bmp.height*.18),sw=bmp.width,sh=Math.round(bmp.height*.64);
- const scale=artW/sw,dw=artW,dh=sh*scale;
- const dy=artY+(artH-dh)/2;
- ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,18);ctx.clip();ctx.fillStyle="#11151a";ctx.fillRect(artX,artY,artW,artH);ctx.drawImage(bmp,sx,sy,sw,sh,artX,dy,dw,dh);ctx.restore();
- ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(artX,artY,artW,artH);
- // One controlled name plate only.
- ctx.fillStyle="#080a0d";ctx.fillRect(75,1200,930,105);
- ctx.fillStyle="#fff";let fs=62;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name||"NIMM-DOLL").width>840&&fs>30){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1235);
- ctx.fillStyle=lime;ctx.font="900 17px Arial,sans-serif";ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,1280);
+ ctx.fillStyle="#080a0d";ctx.fillRect(0,0,W,H);ctx.strokeStyle=lime;ctx.lineWidth=7;ctx.roundRect(45,35,990,1280,34);ctx.stroke();
+ ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 70px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,100);
+ ctx.fillStyle=lime;ctx.font="900 22px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,148);
+ // Product window: use the full clean Runway composition, enlarged to the full package width.
+ const x=65,y=180,w=950,h=930;
+ const cropY=Math.round(bmp.height*.14),cropH=Math.round(bmp.height*.72);
+ const scale=w/bmp.width,dh=cropH*scale,dy=y+(h-dh)/2;
+ ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,22);ctx.clip();ctx.fillStyle="#1a1d20";ctx.fillRect(x,y,w,h);
+ ctx.drawImage(bmp,0,cropY,bmp.width,cropH,x,dy,w,dh);ctx.restore();
+ ctx.strokeStyle=lime;ctx.lineWidth=4;ctx.strokeRect(x,y,w,h);
+ // Single external name plate; never duplicate the product title.
+ ctx.fillStyle="#080a0d";ctx.fillRect(65,1135,950,140);ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(65,1135,950,140);
+ ctx.fillStyle="#fff";let fs=68;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name||"NIMM-DOLL").width>860&&fs>32){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1185);
+ ctx.fillStyle=lime;ctx.font="900 19px Arial,sans-serif";ctx.fillText("PERSONALIZED COLLECTOR EDITION",W/2,1240);
  return canvas;
 }
 async function showAdminFinal(source,name){
