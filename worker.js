@@ -139,6 +139,9 @@ async function startGeneration(env, orderId) {
 async function pollOrder(env, orderId) {
   const order = await env.DB.prepare(`SELECT id, payment_status, generation_status, runway_task_id, result_image, image_data, name, style FROM orders WHERE id = ?`).bind(orderId).first();
   if (!order) return json({ error: "Bestellung nicht gefunden." }, 404);
+  if (order.payment_status === "paid" && order.generation_status === "failed") {
+    return json({ orderId: order.id, paymentStatus: "paid", generationStatus: "failed", recoverable: true, image: null, name: order.name || "", style: order.style || "" });
+  }
   if (order.generation_status !== "running" || !order.runway_task_id) {
     return json({ orderId: order.id, paymentStatus: order.payment_status, generationStatus: order.generation_status, image: order.result_image || null, name: order.name || "", style: order.style || "" });
   }
