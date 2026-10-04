@@ -251,7 +251,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:28px 0;color:var
       </div>
 
       <div class="field">
-        <label for="dollName">Name deiner Doll <span style="color:var(--muted);font-weight:600">(optional)</span></label>
+        <label for="dollName">Name deiner Doll <span id="dollNameHint" style="color:var(--muted);font-weight:600">(optional)</span></label>
         <input id="dollName" maxlength="40" placeholder="z. B. Sophie">
       </div>
 
@@ -410,8 +410,11 @@ document.querySelectorAll(".doll-style").forEach(b=>{
     document.querySelectorAll(".doll-style").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");
     dollState.style=b.dataset.style;
-    const payBtn=document.getElementById("dollGenerate");
-    if(payBtn) payBtn.textContent=dollState.style==="Doll in Box"?"Jetzt für 4,99 € erstellen ✦":"Jetzt für 2,99 € erstellen ✦";
+    const isBox=dollState.style==="Doll in Box";
+    const payBtn=document.getElementById("dollGenerate"),nameInput=document.getElementById("dollName"),nameHint=document.getElementById("dollNameHint");
+    if(payBtn) payBtn.textContent=isBox?"Jetzt für 4,99 € erstellen ✦":"Jetzt für 2,99 € erstellen ✦";
+    if(nameInput){nameInput.required=isBox;nameInput.placeholder=isBox?"Pflichtfeld, z. B. Sophie":"z. B. Sophie";}
+    if(nameHint) nameHint.textContent=isBox?"(Pflichtfeld für Doll in Box)":"(optional)";
   });
 });
 document.getElementById("dollPhoto").addEventListener("change",e=>{
@@ -560,10 +563,17 @@ async function createDoll(){
     err.classList.add("show");
     return;
   }
+  const rawName=(document.getElementById("dollName").value||"").trim();
+  if(dollState.style==="Doll in Box"&&!rawName){
+    err.textContent="Bitte den Namen für deine Doll in Box eingeben.";
+    err.classList.add("show");
+    document.getElementById("dollName").focus();
+    return;
+  }
   setDollBusy(true);
   try{
     const imageData=await dollDataUrl(dollState.file);
-    const name=(document.getElementById("dollName").value||"Deine Doll").trim();
+    const name=rawName||"Deine Doll";
     const response=await fetch("/api/doll/checkout",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
