@@ -12,6 +12,8 @@ const STYLE_PROMPTS = {
   Summer: "stylish summer fashion doll, chic resort outfit, bright natural light, premium collectible product photography",
   "Doll in Box": "premium collectible fashion doll displayed inside a realistic clear blister package, personalized collector packaging, coordinated accessories, luxury retail product photography",
   "Fußball Edition": "premium collectible football player doll, dynamic professional football styling, stadium-inspired premium photography",
+  "Haustier Edition": "premium collectible fashion doll together with a beloved pet, warm elegant portrait styling, premium collector photography",
+  "Weihnachtsedition": "premium collectible festive fashion doll, elegant Christmas styling, warm cinematic holiday photography",
 };
 
 function json(data, status = 200) {
@@ -29,6 +31,14 @@ function json(data, status = 200) {
 function promptFor(style, name = "", accessories = []) {
   const accessoryText = Array.isArray(accessories) && accessories.length ? accessories.slice(0, 9).join(", ") : "keine";
   const safeName = String(name || "").trim().slice(0, 40);
+
+  if (style === "Haustier Edition") {
+    return `Create a vertical premium collectible FASHION DOLL based on the reference person, together with ONE charming companion pet. Preserve the person's recognizable facial identity, age impression, skin tone, hairstyle, hair color, tattoos and distinctive features. Transform the person clearly into a polished high-end 3D collector doll/toy, not a photorealistic human. Show the COMPLETE full-body doll from hair to shoes with nothing cropped. The pet must also be completely visible, naturally positioned beside or held by the doll, and rendered in the same premium collectible-toy aesthetic. If the uploaded reference contains a visible pet, preserve its recognizable species, coat color and distinctive markings as closely as possible; otherwise create a tasteful generic companion dog or cat. Include requested pet/lifestyle accessories where applicable: ${accessoryText}. No retail blister box, no frame, no nameplate, no NIMM-DOLL text, no labels or fake typography. Warm elegant premium studio scene, affectionate but not childish, exactly one human doll and one pet.`;
+  }
+
+  if (style === "Weihnachtsedition") {
+    return `Create a vertical premium collectible CHRISTMAS FASHION DOLL based on the reference person. Preserve recognizable facial identity, age impression, skin tone, hairstyle, hair color, tattoos and distinctive features. Transform the person clearly into a polished high-end 3D collector doll/toy, not a photorealistic human. Show ONE COMPLETE full-body doll from the highest point of the hair to the soles of both shoes, with clear margin above and below and nothing cropped. Dress the doll in an elegant festive winter outfit in tasteful Christmas colors, without brands or logos. Place the doll in a sophisticated warm Christmas setting with soft fairy lights, decorated tree, subtle snow/winter ambience and premium gift styling. Include exactly the requested festive accessories where applicable: ${accessoryText}. Do not add random duplicate objects. No retail blister box, no frame, no nameplate, no NIMM-DOLL text, no labels or fake typography. Premium cinematic holiday collector photography, festive and elegant rather than cartoonish.`;
+  }
 
   if (style === "Fußball Edition") {
     return `Create a vertical premium collectible FOOTBALL PLAYER DOLL based on the reference person. Preserve recognizable facial identity, age impression, skin tone, hairstyle, hair color, tattoos and distinctive features. Transform the person clearly into a polished high-end 3D collector doll/toy, not a photorealistic human. Show ONE complete full-body football doll from the highest point of the hair to the soles of both football boots, with clear empty space above the head and below the boots; nothing may be cropped. Dress the doll in a premium generic football kit with shirt, shorts, socks and boots. Use NO real club crest, federation badge, sponsor logo, trademark, protected team design or brand logo. The kit may use an elegant coordinated color scheme but must remain fictional and unbranded. Place the doll in a premium stadium/tunnel-inspired collector scene. Include exactly the requested football accessories where applicable: ${accessoryText}. If no football-specific accessories are requested, include a football only. No retail blister box, no nameplate, no NIMM-DOLL text, no LIMITED EDITION text, no fake typography. Professional sports collectible photography, energetic but clean composition.`;
