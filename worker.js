@@ -30,7 +30,7 @@ function promptFor(style, name = "", accessories = []) {
   const safeName = String(name || "").trim().slice(0, 40);
 
   if (style === "Doll in Box") {
-    return `Using @person, create ONLY the contents for a collectible doll package, not the package itself. Preserve the recognizable face, age, skin tone, hairstyle and hair color. One complete full-body fashion doll standing on the LEFT, head and shoes fully visible. On the RIGHT, show exactly these separate accessories: ${accessoryText}. Each accessory isolated and fully visible. Simple uniform dark charcoal studio background. No box, no blister shell, no retail packaging, no border, no frame, no title area, no footer. No words, letters, numbers, logos, labels or barcode. Exactly one person and one face. Keep generous empty margin around every object.`;
+    return `Create a vertical premium collectible doll retail package using @person. Preserve the recognizable face, age, skin tone, hairstyle and hair color. Make the doll a large complete full-body figure on the LEFT, head to shoes visible. On the RIGHT place exactly these accessories in separate molded clear compartments: ${accessoryText}. The package itself must be a realistic tall black cardboard box with a transparent molded blister front, thin neon-lime trim, subtle studio reflections, premium shelf-ready product photography, photographed straight-on, entire box visible and filling most of the portrait frame. Leave a clean blank black header panel and a clean blank black name panel at the bottom for later website text. Absolutely no words, letters, numbers, logos, labels, barcode or fake typography anywhere. Exactly one person and one face.`;
   }
 
   const looks = {
@@ -126,8 +126,8 @@ async function startGeneration(env, orderId) {
     let accessories = [];
     try { accessories = order.accessories ? JSON.parse(order.accessories) : []; } catch { accessories = []; }
     const payload = {
-      model: "gen4_image",
-      ratio: "1920:1080",
+      model: "seedream5_lite",
+      ratio: "2048:3072",
       promptText: promptFor(order.style, order.name, accessories),
       referenceImages: [{ uri: runwayUri, tag: "person" }],
     };
