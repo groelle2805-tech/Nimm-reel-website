@@ -78,9 +78,10 @@ async function renderAdminFinal(source,name){
  ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillStyle="#fff";ctx.font="900 66px Arial,sans-serif";ctx.fillText("NIMM-DOLL",W/2,105);
  ctx.fillStyle=lime;ctx.font="900 22px Arial,sans-serif";ctx.fillText("LIMITED EDITION",W/2,150);
  const artX=75,artY=180,artW=930,artH=980;
- // Fill the package window while keeping the whole generated blister visible.
- const scale=Math.min(artW/bmp.width,artH/bmp.height),dw=bmp.width*scale,dh=bmp.height*scale;
- ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,18);ctx.clip();ctx.fillStyle="#11151a";ctx.fillRect(artX,artY,artW,artH);ctx.drawImage(bmp,artX+(artW-dw)/2,artY+(artH-dh)/2,dw,dh);ctx.restore();
+ // Runway output is 16:9 with deliberate empty top/bottom studio space. Remove only that empty space, then fit the complete doll/accessory composition.
+ const sx=0,sy=Math.round(bmp.height*.20),sw=bmp.width,sh=Math.round(bmp.height*.60);
+ const scale=Math.min(artW/sw,artH/sh),dw=sw*scale,dh=sh*scale;
+ ctx.save();ctx.beginPath();ctx.roundRect(artX,artY,artW,artH,18);ctx.clip();ctx.fillStyle="#11151a";ctx.fillRect(artX,artY,artW,artH);ctx.drawImage(bmp,sx,sy,sw,sh,artX+(artW-dw)/2,artY+(artH-dh)/2,dw,dh);ctx.restore();
  ctx.strokeStyle=lime;ctx.lineWidth=3;ctx.strokeRect(artX,artY,artW,artH);
  ctx.fillStyle="#080a0d";ctx.fillRect(75,1175,930,115);
  ctx.fillStyle="#fff";let fs=62;ctx.font=`900 ${fs}px Arial,sans-serif`;while(ctx.measureText(name||"NIMM-DOLL").width>840&&fs>30){fs-=2;ctx.font=`900 ${fs}px Arial,sans-serif`;}ctx.fillText(name||"NIMM-DOLL",W/2,1215);
