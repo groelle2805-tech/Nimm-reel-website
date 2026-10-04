@@ -63,7 +63,7 @@ small{color:var(--muted)}
 <label class="check"><input type="checkbox" value="Smartphone">Smartphone</label><label class="check"><input type="checkbox" value="Plant">Pflanze</label>
 </div>
 <button id="go">Kostenlosen Admin-Test erstellen</button><div id="status" class="status"></div>
-<div id="out" class="out"><div class="stage"><img id="result" alt="NIMM-DOLL Testergebnis"><div id="nameplate" class="nameplate"></div><div class="box-sub">PREMIUM PERSONALIZED DOLL</div></div><div id="finalPack" class="final-pack"><div class="pack-window"><img id="finalPackImg" alt="NIMM-DOLL Premium Box"><div id="boxNameMask" class="text-mask-bottom"></div></div><div class="pack-badge">AI<br>POWERED</div><div class="pack-side">PERSONALIZED EDITION</div><div class="pack-footer"><div id="finalPackName" class="pack-name"></div><div class="pack-edition">PERSONALIZED COLLECTOR EDITION</div></div></div><button id="download" type="button">Bild mit Namen herunterladen</button></div>
+<div id="out" class="out"><div class="stage"><img id="result" alt="NIMM-DOLL Testergebnis"><div id="nameplate" class="nameplate"></div><div class="box-sub">PREMIUM PERSONALIZED DOLL</div></div><div id="finalPack" class="final-pack"><div class="pack-window"><img id="finalPackImg" alt="NIMM-DOLL Premium Box"><div id="boxNameMask" class="text-mask-bottom"></div></div></div><button id="download" type="button">Bild mit Namen herunterladen</button></div>
 </div></main>
 <script>
 const $=id=>document.getElementById(id);
@@ -119,7 +119,7 @@ async function run(){
    const p=await fetch("/api/doll?order="+encodeURIComponent(d.orderId)); const q=await p.json();
    if(!p.ok)throw new Error(q.error||"Statusfehler");
    if(q.generationStatus==="failed")throw new Error(q.error||"Bildgenerierung fehlgeschlagen.");
-   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("result").dataset.source=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";if($("finalPackImg"))await showAdminFinal(q.image,name);if($("finalPackName"))$("finalPackName").textContent=(name||$("name").value||"").trim();if($("boxNameMask"))$("boxNameMask").textContent=(name||$("name").value||"").trim();localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
+   if(q.generationStatus==="succeeded"&&q.image){$("result").src=q.image;$("result").dataset.source=q.image;$("nameplate").textContent=style==="Doll in Box"?name:"";if($("cleanName"))$("cleanName").textContent=style==="Doll in Box"?name:"";$("out").style.display="block";if($("finalPackImg"))await showAdminFinal(q.image,name);if($("boxNameMask"))$("boxNameMask").textContent=(name||$("name").value||"").trim();localStorage.setItem("nimmdollLastTest",JSON.stringify({orderId:d.orderId,image:q.image,name,style,accessories}));s.textContent="Fertig.";return}
   }
   throw new Error("Die Erstellung dauert länger als erwartet.");
  }catch(e){s.className="status err";s.textContent=(e&&e.message)?e.message:"Technischer Fehler beim Foto-Upload. Bitte Foto erneut auswählen.";console.error("NIMMDOLL_ADMIN_TEST_ERROR",e)}
